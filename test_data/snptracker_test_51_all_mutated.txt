@@ -1,0 +1,4 @@
+>reference All positions mutated
+ATAAAATAGCGAAATAGAAAATTACAACAA
+>sample All positions mutated
+GGTATTGGCCCTTCGCTCGCCTAGCCTGGG
