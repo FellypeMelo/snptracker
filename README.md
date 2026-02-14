@@ -31,6 +31,35 @@ Amostra:    A C T G G T A G A T A
 - **Relatório Estruturado**: Saída formatada em tabela
 - **Exportação**: Salva resultados em arquivo texto
 
+## Estrutura de Dados
+
+### 📁 `test_data/` - Dados Sintéticos (Commitados)
+Contém **55+ pares referência/amostra** com SNPs conhecidos:
+- ✅ **Commitados no GitHub**
+- 🎯 **SNPs injetados** (quantidade e posição conhecidas)
+- 📊 **Tipos variados** (transitions, transversions, indels)
+- 🧪 **Casos clínicos** (CpG islands, heterozigoto, sinônimo)
+
+**Regenerar:**
+```bash
+python generate_test_data.py
+```
+
+### 📁 `data/` - Dados Reais (Gitignored)
+Para dados reais de pesquisa:
+- 🚫 **Ignorado pelo Git**
+- 🧬 **Dados de sequenciamento** (WGS, WES, painéis)
+- 🔬 **Amostras clínicas**
+
+**Fontes recomendadas:**
+- **dbSNP (NCBI)** - SNPs validados
+- **1000 Genomes** - Variantes populacionais
+- **Sequenciamento próprio** - Dados de sua pesquisa
+
+**Formatos:**
+- FASTA (referência e amostra)
+- VCF (Variant Call Format) - Futuro
+
 ## Instalação
 
 ### Pré-requisitos
