@@ -16,7 +16,7 @@
 
 ## Phase 3: Integration & Reporting
 
-- [ ] Task: Integrate FASTA parser into CLI
-    - [ ] Write Tests: Add integration tests in `tests/test_cli.py` for file inputs
-    - [ ] Implement Feature: Update CLI to accept file paths and load sequences via parser
+- [x] Task: Integrate FASTA parser into CLI 268d42f
+    - [x] Write Tests: Add integration tests in `tests/test_cli.py` for file inputs
+    - [x] Implement Feature: Update CLI to accept file paths and load sequences via parser
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Integration & Reporting' (Protocol in workflow.md)
