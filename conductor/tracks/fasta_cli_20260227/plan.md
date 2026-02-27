@@ -9,9 +9,9 @@
 
 ## Phase 2: FASTA File Support
 
-- [ ] Task: Implement FASTA file parser
-    - [ ] Write Tests: Create `tests/test_fasta_parser.py` with mock FASTA data
-    - [ ] Implement Feature: Create `fasta_parser.py` with a function to read FASTA files
+- [x] Task: Implement FASTA file parser b6c57ea
+    - [x] Write Tests: Create `tests/test_fasta_parser.py` with mock FASTA data
+    - [x] Implement Feature: Create `fasta_parser.py` with a function to read FASTA files
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: FASTA File Support' (Protocol in workflow.md)
 
 ## Phase 3: Integration & Reporting
