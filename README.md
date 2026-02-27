@@ -25,11 +25,13 @@ Amostra:    A C T G G T A G A T A
 
 ## Funcionalidades
 
-- **Comparação Base a Base**: Análise posição por posição
-- **Classificação de Mutações**: Identifica transitions e transversions
-- **Detecção de Indels**: Identifica inserções e deleções
-- **Relatório Estruturado**: Saída formatada em tabela
-- **Exportação**: Salva resultados em arquivo texto
+- **Interface de Linha de Comando (CLI)**: Processamento via argumentos argparse.
+- **Suporte a Arquivos FASTA**: Lê sequências diretamente de arquivos `.fasta` ou `.fa`.
+- **Comparação Base a Base**: Análise posição por posição de alta precisão.
+- **Classificação de Mutações**: Identifica transitions e transversions.
+- **Detecção de Indels**: Identifica inserções e deleções.
+- **Relatório Estruturado**: Saída formatada em tabela.
+- **Exportação**: Salva resultados em arquivo texto customizável.
 
 ## Estrutura de Dados
 
@@ -56,10 +58,6 @@ Para dados reais de pesquisa:
 - **1000 Genomes** - Variantes populacionais
 - **Sequenciamento próprio** - Dados de sua pesquisa
 
-**Formatos:**
-- FASTA (referência e amostra)
-- VCF (Variant Call Format) - Futuro
-
 ## Instalação
 
 ### Pré-requisitos
@@ -78,21 +76,23 @@ Pronto! Não precisa instalar nada mais.
 
 ## Como Usar
 
-### Execução Básica
+### Execução via CLI (Recomendado)
 
+O SNPTracker agora suporta argumentos de linha de comando para maior flexibilidade.
+
+#### Usando strings brutas:
 ```bash
-python main.py
+python main.py --reference "ACTGCTAGCTA" --sample "ACTGCTGGCTA"
 ```
 
-O programa compara duas sequências de exemplo e gera um relatório.
+#### Usando arquivos FASTA:
+```bash
+python main.py --reference reference.fasta --sample sample.fasta
+```
 
-### Personalizando Sequências
-
-Edite as variáveis no final do arquivo `main.py`:
-
-```python
-reference = "ACTGCTAGCTAGCTA"  # Sequência de referência
-sample = "ACTGCTGGCTAGATA"    # Sequência da amostra
+#### Customizando a saída:
+```bash
+python main.py --reference ref.fa --sample smp.fa --output meu_relatorio.txt
 ```
 
 ### Exemplo de Saída
@@ -155,12 +155,13 @@ Amostra:    ACTGCTAGCTAGCTA (15 bp)  # Inserção de 4 bases
 
 ```
 snptracker/
-├── main.py              # Código principal
+├── main.py              # Código principal e CLI
+├── fasta_parser.py      # Utilitário de leitura FASTA
 ├── requirements.txt     # Sem dependências
 ├── README.md           # Documentação
-├── data/
-│   └── sequences.txt   # Exemplo de sequências
-└── snps_report.txt     # Relatório gerado
+├── tests/              # Suíte de testes unitários e integração
+├── data/               # Diretório para dados reais
+└── test_data/          # Dados sintéticos para validação
 ```
 
 ## Guia de Desenvolvimento
@@ -174,11 +175,12 @@ snptracker/
 - [x] Gerar relatório formatado
 - [x] Documentação inicial
 
-#### Milestone 2: Melhorias de Funcionalidade 🚧
-- [ ] Ler sequências de arquivos FASTA
+#### Milestone 2: Melhorias de Funcionalidade ✅
+- [x] Ler sequências de arquivos FASTA
+- [x] Implementar Argparse CLI
+- [x] Criar suíte de testes (TDD)
 - [ ] Suporte a múltiplas amostras vs referência
 - [ ] Anotação de SNPs (sinônimo/não-sinônimo)
-- [ ] Cálculo de frequência alélica
 
 #### Milestone 3: Análises Avançadas 📊
 - [ ] Efeito funcional predito (SIFT, Polyphen)
@@ -191,26 +193,6 @@ snptracker/
 - [ ] Anotação com genes e transcripts
 - [ ] Exportação em formato VCF
 - [ ] Comparação com populações (1000 Genomes)
-
-### Tarefas para Contribuidores
-
-**Nível Iniciante:**
-1. Adicionar argparse para CLI
-2. Implementar leitura de arquivos FASTA
-3. Criar testes unitários
-4. Adicionar estatísticas (taxa de mutação, etc.)
-
-**Nível Intermediário:**
-1. Implementar análise de múltiplas amostras
-2. Adicionar anotação sinônimo/não-sinônimo
-3. Criar visualização das mutações
-4. Exportar em formato VCF básico
-
-**Nível Avançado:**
-1. Integrar com APIs de bancos de dados (NCBI, Ensembl)
-2. Implementar pipeline completo de calling
-3. Adicionar filtros de qualidade
-4. Análise de linkage disequilibrium
 
 ## Algoritmo
 
@@ -227,45 +209,6 @@ for i in range(min_length):
         }
 ```
 
-### Classificação
-
-```python
-purines = {'A', 'G'}
-pyrimidines = {'C', 'T'}
-
-if (ref in purines and alt in purines) or \
-   (ref in pyrimidines and alt in pyrimidines):
-    return "TRANSITION"
-else:
-    return "TRANSVERSION"
-```
-
-## Exemplos de Aplicação
-
-### 1. Medicina Genômica
-```
-Gene CFTR (Fibrose Cística):
-Referência: ...ATG GAG AAG...
-Paciente:   ...ATG GTG AAG...  # SNP: Glu→Val (G542V)
-                              # Mutação patogênica
-```
-
-### 2. Farmacogenômica
-```
-Gene CYP2D6:
-Referência: ...CYP2D6*1 (normal)
-Paciente:   ...CYP2D6*4 (variante)
-                              # Metabolismo lento de codeína
-```
-
-### 3. Agricultura
-```
-Trigo:
-Referência: ...GGCC... (susceptível à doença)
-Cultivar:   ...GACC... (resistente)
-                              # SNP associado à resistência
-```
-
 ## Conceitos Relacionados
 
 ### SNP vs Mutação
@@ -277,10 +220,6 @@ Cultivar:   ...GACC... (resistente)
 2. **Não-sinônimo**: Altera o aminoácido
 3. **Nonsense**: Cria códon de parada prematuro
 
-### Nomenclatura
-- **rsID**: Identificador no dbSNP (ex: rs334)
-- **HGVS**: Padrão de nomenclatura (ex: NM_000518.5:c.20A>T)
-
 ## Limitações Atuais
 
 - Apenas duas sequências por vez
@@ -291,30 +230,10 @@ Cultivar:   ...GACC... (resistente)
 
 ## Próximos Passos Recomendados
 
-1. **Leitura FASTA**: Processar arquivos reais
-2. **Múltiplas Amostras**: Comparar vários indivíduos
-3. **Anotação**: Identificar efeito na proteína
-4. **VCF Export**: Formato padrão da indústria
-5. **Filtros**: Qualidade, profundidade, etc.
-
-## Formatos de Arquivo
-
-### VCF (Variant Call Format) - Futuro
-```
-#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
-chr1    12345   rs123   A       G       99      PASS    DP=35
-```
-
-### SAM/BAM - Alinhamentos
-Formato binário para armazenar alinhamentos de reads.
-
-## Referências
-
-- [SNPs - NCBI](https://www.ncbi.nlm.nih.gov/snp/)
-- [dbSNP Database](https://www.ncbi.nlm.nih.gov/snp/)
-- [1000 Genomes Project](https://www.internationalgenome.org/)
-- [VCF Format](https://samtools.github.io/hts-specs/VCFv4.2.pdf)
-- [HGVS Nomenclature](https://varnomen.hgvs.org/)
+1. **Múltiplas Amostras**: Comparar vários indivíduos
+2. **Anotação**: Identificar efeito na proteína
+3. **VCF Export**: Formato padrão da indústria
+4. **Filtros**: Qualidade, profundidade, etc.
 
 ## Licença
 
