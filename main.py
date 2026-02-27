@@ -10,6 +10,8 @@ diferentes indivíduos ou amostras.
 
 
 import argparse
+import os
+from fasta_parser import read_fasta
 
 
 def detect_snps(reference, sample):
@@ -148,6 +150,21 @@ def generate_snp_file(snps, output_file="snps_report.txt"):
     print(f"\nRelatório salvo em: {output_file}")
 
 
+def load_sequence(input_data):
+    """
+    Loads sequence from a file if it exists, otherwise returns the string.
+
+    Args:
+        input_data: File path or raw sequence string.
+
+    Returns:
+        str: DNA sequence.
+    """
+    if os.path.isfile(input_data):
+        return read_fasta(input_data)
+    return input_data
+
+
 def parse_args(args=None):
     """
     Parses command line arguments.
@@ -174,8 +191,8 @@ def main():
     # Processa argumentos da CLI
     args = parse_args()
 
-    reference = args.reference
-    sample = args.sample
+    reference = load_sequence(args.reference)
+    sample = load_sequence(args.sample)
     output_file = args.output
 
     # Detecta SNPs
