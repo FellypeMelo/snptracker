@@ -9,6 +9,9 @@ diferentes indivíduos ou amostras.
 """
 
 
+import argparse
+
+
 def detect_snps(reference, sample):
     """
     Compara duas sequências e identifica SNPs.
@@ -145,11 +148,35 @@ def generate_snp_file(snps, output_file="snps_report.txt"):
     print(f"\nRelatório salvo em: {output_file}")
 
 
+def parse_args(args=None):
+    """
+    Parses command line arguments.
+
+    Args:
+        args: List of arguments to parse. If None, uses sys.argv.
+
+    Returns:
+        argparse.Namespace: Parsed arguments.
+    """
+    parser = argparse.ArgumentParser(description="SNPTracker - Detector de SNPs")
+    parser.add_argument(
+        "--reference", required=True, help="Sequência de referência (DNA)"
+    )
+    parser.add_argument("--sample", required=True, help="Sequência da amostra (DNA)")
+    parser.add_argument(
+        "--output", default="snps_report.txt", help="Nome do arquivo de saída"
+    )
+    return parser.parse_args(args)
+
+
 def main():
     """Função principal do programa."""
-    # Sequências de exemplo com SNPs
-    reference = "ACTGCTAGCTAGCTA"
-    sample = "ACTGCTGGCTAGATA"
+    # Processa argumentos da CLI
+    args = parse_args()
+
+    reference = args.reference
+    sample = args.sample
+    output_file = args.output
 
     # Detecta SNPs
     snps = detect_snps(reference, sample)
@@ -159,7 +186,7 @@ def main():
 
     # Gera arquivo de saída
     if snps:
-        generate_snp_file(snps)
+        generate_snp_file(snps, output_file=output_file)
 
     print("\nAnálise concluída!")
 
