@@ -14,9 +14,9 @@
     - [x] Implement Feature: Create `fasta_parser.py` with a function to read FASTA files
 - [x] Task: Conductor - User Manual Verification 'Phase 2: FASTA File Support' (Protocol in workflow.md) 8fd0af2
 
-## Phase 3: Integration & Reporting
+## Phase 3: Integration & Reporting [checkpoint: 2189835]
 
 - [x] Task: Integrate FASTA parser into CLI 268d42f
     - [x] Write Tests: Add integration tests in `tests/test_cli.py` for file inputs
     - [x] Implement Feature: Update CLI to accept file paths and load sequences via parser
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Integration & Reporting' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Integration & Reporting' (Protocol in workflow.md) 2189835
