@@ -2,7 +2,7 @@
 SNPTracker - Dados de Teste Sintéticos
 ======================================================================
 
-Gerado em: 2026-02-14 17:31:59
+Gerado em: 2026-02-14 17:42:01
 Total de datasets: 57
 
 ATENÇÃO: Estes são dados FABRICADOS com SNPs conhecidos.
@@ -12,94 +12,94 @@ Formato: Cada arquivo contém referência e amostra
 Lista de arquivos:
 ----------------------------------------------------------------------
 snptracker_test_01_identical.txt - No SNPs (identical)
-  Ref: 211 bp, Sample: 211 bp
+  Ref: 123 bp, Sample: 123 bp
 snptracker_test_02_identical.txt - No SNPs (identical)
-  Ref: 276 bp, Sample: 276 bp
+  Ref: 266 bp, Sample: 266 bp
 snptracker_test_03_identical.txt - No SNPs (identical)
-  Ref: 235 bp, Sample: 235 bp
+  Ref: 176 bp, Sample: 176 bp
 snptracker_test_04_identical.txt - No SNPs (identical)
-  Ref: 280 bp, Sample: 280 bp
+  Ref: 146 bp, Sample: 146 bp
 snptracker_test_05_identical.txt - No SNPs (identical)
-  Ref: 183 bp, Sample: 183 bp
+  Ref: 227 bp, Sample: 227 bp
 snptracker_test_06_identical.txt - No SNPs (identical)
-  Ref: 216 bp, Sample: 216 bp
+  Ref: 289 bp, Sample: 289 bp
 snptracker_test_07_identical.txt - No SNPs (identical)
-  Ref: 278 bp, Sample: 278 bp
+  Ref: 218 bp, Sample: 218 bp
 snptracker_test_08_identical.txt - No SNPs (identical)
-  Ref: 185 bp, Sample: 185 bp
+  Ref: 215 bp, Sample: 215 bp
 snptracker_test_09_identical.txt - No SNPs (identical)
-  Ref: 213 bp, Sample: 213 bp
+  Ref: 264 bp, Sample: 264 bp
 snptracker_test_10_identical.txt - No SNPs (identical)
-  Ref: 257 bp, Sample: 257 bp
-snptracker_test_11_few_snps.txt - 2 SNPs
-  Ref: 263 bp, Sample: 263 bp
+  Ref: 143 bp, Sample: 143 bp
+snptracker_test_11_few_snps.txt - 3 SNPs
+  Ref: 229 bp, Sample: 229 bp
 snptracker_test_12_few_snps.txt - 1 SNPs
-  Ref: 159 bp, Sample: 159 bp
+  Ref: 280 bp, Sample: 280 bp
 snptracker_test_13_few_snps.txt - 3 SNPs
-  Ref: 131 bp, Sample: 131 bp
+  Ref: 282 bp, Sample: 282 bp
 snptracker_test_14_few_snps.txt - 2 SNPs
-  Ref: 121 bp, Sample: 121 bp
+  Ref: 271 bp, Sample: 271 bp
 snptracker_test_15_few_snps.txt - 1 SNPs
-  Ref: 239 bp, Sample: 239 bp
-snptracker_test_16_few_snps.txt - 1 SNPs
-  Ref: 221 bp, Sample: 221 bp
-snptracker_test_17_few_snps.txt - 1 SNPs
-  Ref: 231 bp, Sample: 231 bp
-snptracker_test_18_few_snps.txt - 3 SNPs
-  Ref: 228 bp, Sample: 228 bp
-snptracker_test_19_few_snps.txt - 1 SNPs
-  Ref: 258 bp, Sample: 258 bp
-snptracker_test_20_few_snps.txt - 3 SNPs
-  Ref: 295 bp, Sample: 295 bp
-snptracker_test_21_medium_snps.txt - 9 SNPs
-  Ref: 308 bp, Sample: 308 bp
+  Ref: 263 bp, Sample: 263 bp
+snptracker_test_16_few_snps.txt - 2 SNPs
+  Ref: 142 bp, Sample: 142 bp
+snptracker_test_17_few_snps.txt - 2 SNPs
+  Ref: 261 bp, Sample: 261 bp
+snptracker_test_18_few_snps.txt - 2 SNPs
+  Ref: 135 bp, Sample: 135 bp
+snptracker_test_19_few_snps.txt - 2 SNPs
+  Ref: 232 bp, Sample: 232 bp
+snptracker_test_20_few_snps.txt - 1 SNPs
+  Ref: 275 bp, Sample: 275 bp
+snptracker_test_21_medium_snps.txt - 7 SNPs
+  Ref: 186 bp, Sample: 186 bp
 snptracker_test_22_medium_snps.txt - 6 SNPs
-  Ref: 333 bp, Sample: 333 bp
+  Ref: 386 bp, Sample: 386 bp
 snptracker_test_23_medium_snps.txt - 10 SNPs
-  Ref: 365 bp, Sample: 365 bp
-snptracker_test_24_medium_snps.txt - 8 SNPs
-  Ref: 342 bp, Sample: 342 bp
-snptracker_test_25_medium_snps.txt - 9 SNPs
+  Ref: 344 bp, Sample: 344 bp
+snptracker_test_24_medium_snps.txt - 9 SNPs
+  Ref: 364 bp, Sample: 364 bp
+snptracker_test_25_medium_snps.txt - 6 SNPs
   Ref: 266 bp, Sample: 266 bp
 snptracker_test_26_medium_snps.txt - 10 SNPs
-  Ref: 287 bp, Sample: 287 bp
+  Ref: 197 bp, Sample: 197 bp
 snptracker_test_27_medium_snps.txt - 6 SNPs
-  Ref: 332 bp, Sample: 332 bp
-snptracker_test_28_medium_snps.txt - 5 SNPs
-  Ref: 202 bp, Sample: 202 bp
-snptracker_test_29_medium_snps.txt - 10 SNPs
-  Ref: 282 bp, Sample: 282 bp
-snptracker_test_30_medium_snps.txt - 5 SNPs
-  Ref: 166 bp, Sample: 166 bp
-snptracker_test_31_many_snps.txt - 15 SNPs
-  Ref: 423 bp, Sample: 423 bp
-snptracker_test_32_many_snps.txt - 24 SNPs
-  Ref: 382 bp, Sample: 382 bp
-snptracker_test_33_many_snps.txt - 19 SNPs
-  Ref: 422 bp, Sample: 422 bp
-snptracker_test_34_many_snps.txt - 20 SNPs
-  Ref: 289 bp, Sample: 289 bp
-snptracker_test_35_many_snps.txt - 20 SNPs
-  Ref: 259 bp, Sample: 259 bp
-snptracker_test_36_with_indels.txt - 2 indels
-  Ref: 176 bp, Sample: 176 bp
-snptracker_test_37_with_indels.txt - 2 indels
-  Ref: 167 bp, Sample: 167 bp
-snptracker_test_38_with_indels.txt - 3 indels
-  Ref: 243 bp, Sample: 244 bp
-snptracker_test_39_with_indels.txt - 2 indels
-  Ref: 282 bp, Sample: 282 bp
-snptracker_test_40_with_indels.txt - 3 indels
-  Ref: 169 bp, Sample: 170 bp
-snptracker_test_41_snps_indels.txt - 9 variants
-  Ref: 321 bp, Sample: 320 bp
-snptracker_test_42_snps_indels.txt - 10 variants
-  Ref: 252 bp, Sample: 254 bp
+  Ref: 346 bp, Sample: 346 bp
+snptracker_test_28_medium_snps.txt - 9 SNPs
+  Ref: 255 bp, Sample: 255 bp
+snptracker_test_29_medium_snps.txt - 5 SNPs
+  Ref: 271 bp, Sample: 271 bp
+snptracker_test_30_medium_snps.txt - 8 SNPs
+  Ref: 231 bp, Sample: 231 bp
+snptracker_test_31_many_snps.txt - 22 SNPs
+  Ref: 494 bp, Sample: 494 bp
+snptracker_test_32_many_snps.txt - 20 SNPs
+  Ref: 434 bp, Sample: 434 bp
+snptracker_test_33_many_snps.txt - 15 SNPs
+  Ref: 386 bp, Sample: 386 bp
+snptracker_test_34_many_snps.txt - 23 SNPs
+  Ref: 286 bp, Sample: 286 bp
+snptracker_test_35_many_snps.txt - 16 SNPs
+  Ref: 277 bp, Sample: 277 bp
+snptracker_test_36_with_indels.txt - 3 indels
+  Ref: 160 bp, Sample: 163 bp
+snptracker_test_37_with_indels.txt - 1 indels
+  Ref: 153 bp, Sample: 152 bp
+snptracker_test_38_with_indels.txt - 1 indels
+  Ref: 185 bp, Sample: 184 bp
+snptracker_test_39_with_indels.txt - 3 indels
+  Ref: 212 bp, Sample: 211 bp
+snptracker_test_40_with_indels.txt - 1 indels
+  Ref: 168 bp, Sample: 169 bp
+snptracker_test_41_snps_indels.txt - 6 variants
+  Ref: 266 bp, Sample: 267 bp
+snptracker_test_42_snps_indels.txt - 4 variants
+  Ref: 393 bp, Sample: 394 bp
 snptracker_test_43_snps_indels.txt - 9 variants
-  Ref: 339 bp, Sample: 338 bp
-snptracker_test_44_snps_indels.txt - 6 variants
-  Ref: 345 bp, Sample: 343 bp
-snptracker_test_45_snps_indels.txt - 5 variants
+  Ref: 338 bp, Sample: 339 bp
+snptracker_test_44_snps_indels.txt - 8 variants
+  Ref: 370 bp, Sample: 371 bp
+snptracker_test_45_snps_indels.txt - 4 variants
   Ref: 355 bp, Sample: 354 bp
 snptracker_test_46_heterozygous.txt - Heterozygous-like
   Ref: 200 bp, Sample: 200 bp
@@ -109,7 +109,7 @@ snptracker_test_48_transversions.txt - 15 transversions
   Ref: 200 bp, Sample: 200 bp
 snptracker_test_49_cpg_island.txt - CpG island (high mutation)
   Ref: 200 bp, Sample: 200 bp
-snptracker_test_50_synonymous.txt - 19 synonymous changes
+snptracker_test_50_synonymous.txt - 13 synonymous changes
   Ref: 150 bp, Sample: 150 bp
 snptracker_test_51_all_mutated.txt - All positions mutated
   Ref: 30 bp, Sample: 30 bp

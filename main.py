@@ -14,7 +14,7 @@ import os
 from fasta_parser import read_fasta
 
 
-def detect_snps(reference, sample):
+def detect_snps(reference: str, sample: str) -> list[dict]:
     """
     Compara duas sequências e identifica SNPs.
 
@@ -74,7 +74,7 @@ def detect_snps(reference, sample):
     return snps
 
 
-def classify_mutation(ref_base, alt_base):
+def classify_mutation(ref_base: str, alt_base: str) -> str:
     """
     Classifica o tipo de mutação.
 
@@ -96,7 +96,7 @@ def classify_mutation(ref_base, alt_base):
         return "TRANSVERSION"
 
 
-def print_snp_report(snps, reference, sample):
+def print_snp_report(snps: list[dict], reference: str, sample: str) -> None:
     """
     Imprime relatório de SNPs formatado.
 
@@ -126,7 +126,7 @@ def print_snp_report(snps, reference, sample):
         print("\nNenhuma variação detectada (sequências idênticas)")
 
 
-def generate_snp_file(snps, output_file="snps_report.txt"):
+def generate_snp_file(snps: list[dict], output_file: str = "snps_report.txt") -> None:
     """
     Salva relatório em arquivo.
 
@@ -150,7 +150,7 @@ def generate_snp_file(snps, output_file="snps_report.txt"):
     print(f"\nRelatório salvo em: {output_file}")
 
 
-def load_sequence(input_data):
+def load_sequence(input_data: str) -> str:
     """
     Loads sequence from a file if it exists, otherwise returns the string.
 
@@ -165,7 +165,7 @@ def load_sequence(input_data):
     return input_data
 
 
-def parse_args(args=None):
+def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """
     Parses command line arguments.
 

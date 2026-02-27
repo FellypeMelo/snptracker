@@ -4,7 +4,7 @@ FASTA Parser Utility
 Provides functions to read DNA sequences from standard FASTA files.
 """
 
-def read_fasta(file_path):
+def read_fasta(file_path: str) -> str:
     """
     Reads the first DNA sequence from a FASTA file.
 
