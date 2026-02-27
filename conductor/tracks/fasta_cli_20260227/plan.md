@@ -1,11 +1,11 @@
 ﻿# Implementation Plan: Implement FASTA file support and Argparse CLI
 
-## Phase 1: CLI Infrastructure
+## Phase 1: CLI Infrastructure [checkpoint: f3b4f73]
 
 - [x] Task: Set up CLI argument parsing with argparse 4c50d31
     - [x] Write Tests: Create `tests/test_cli.py` to verify argparse configuration
     - [x] Implement Feature: Refactor `main.py` to use argparse for input sequences
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: CLI Infrastructure' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: CLI Infrastructure' (Protocol in workflow.md) f3b4f73
 
 ## Phase 2: FASTA File Support
 
