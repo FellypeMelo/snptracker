@@ -1,7 +1,19 @@
 """
-FASTA Parser Utility
+SNPTracker - FASTA Parser Utility
 
 Provides functions to read DNA sequences from standard FASTA files.
+
+FASTA format expected:
+    >header line (any text after '>')
+    SEQUENCE (may span multiple lines; lines are concatenated)
+    >next_header
+    ...
+
+Public API:
+    read_fasta(file_path)         — returns the first sequence as a plain str
+    read_all_sequences(file_path) — returns list[tuple[header, sequence]]
+
+Both functions raise FileNotFoundError if the file does not exist.
 """
 
 

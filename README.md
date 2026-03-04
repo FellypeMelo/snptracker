@@ -31,7 +31,8 @@ Amostra:    A C T G G T A G A T A
 - **Classificação de Mutações**: Identifica transitions e transversions.
 - **Detecção de Indels**: Identifica inserções e deleções.
 - **Anotação Funcional**: Classifica cada SNP como SYNONYMOUS, NON_SYNONYMOUS, NONSENSE ou NON_CODING com base no código genético padrão.
-- **Relatório Estruturado**: Saída formatada em tabela com coluna de anotação.
+- **Contexto de Trinucleotídeo**: Reporta as bases vizinhas de cada SNP no formato COSMIC (`BASE_ANTERIOR[REF>ALT]BASE_POSTERIOR`).
+- **Relatório Estruturado**: Saída formatada em tabela com colunas de anotação e contexto.
 - **Exportação**: Salva resultados em arquivo texto customizável.
 
 ## Estrutura de Dados
@@ -145,12 +146,12 @@ Amostra:    ACTGCTGGCTAGATA
 
 Total de variações encontradas: 3
 
-------------------------------------------------------------
-Posição    Ref   Alt   Tipo            Anotação
-------------------------------------------------------------
-7          A     G     TRANSVERSION    NON_SYNONYMOUS
-11         C     A     TRANSVERSION    NON_SYNONYMOUS
-14         T     A     TRANSVERSION    NON_CODING
+----------------------------------------------------------------------
+Posição    Ref   Alt   Tipo            Anotação             Contexto
+----------------------------------------------------------------------
+7          A     G     TRANSVERSION    NON_SYNONYMOUS       T[A>G]C
+11         C     A     TRANSVERSION    NON_SYNONYMOUS       G[C>A]T
+14         T     A     TRANSVERSION    NON_CODING           C[T>A]_
 
 Relatório salvo em: snps_report.txt
 
@@ -237,10 +238,11 @@ snptracker/
 - [x] Anotação de SNPs (SYNONYMOUS / NON_SYNONYMOUS / NONSENSE / NON_CODING)
 
 #### Milestone 3: Análises Avançadas 📊
-- [ ] Efeito funcional predito (SIFT, Polyphen)
-- [ ] Contexto de sequência (trinucleotídeos)
+- [x] Contexto de trinucleotídeo (formato COSMIC: `X[R>A]Y`)
 - [ ] Regiões codificantes vs não-codificantes
-- [ ] Análise de qualidade (Phred scores)
+- [ ] Múltiplos reading frames
+- [ ] Análise de qualidade (Phred scores / FASTQ)
+- [ ] Predição funcional (SIFT, PolyPhen)
 
 #### Milestone 4: Integração e Bancos de Dados 🔄
 - [ ] Consulta a dbSNP (NCBI)
@@ -261,8 +263,11 @@ for i in range(min_length):
             'alternate': sample[i],
             'type': classify_mutation(reference[i], sample[i]),
             'annotation': annotate_snp(i + 1, reference, sample),
+            'context': get_trinucleotide_context(reference, i + 1, reference[i], sample[i]),
         }
 ```
+
+INDELs detectados pela diferença de comprimento entre as sequências **não recebem** a chave `context`.
 
 ## Conceitos Relacionados
 
@@ -281,6 +286,24 @@ A anotação funcional é calculada automaticamente por `annotation.py` com base
 | `NONSENSE` | Troca que cria um **códon de parada** (TAA, TAG, TGA) |
 | `NON_CODING` | SNP em região de trinca incompleta, ou indel (sem anotação de códon aplicável) |
 
+### Contexto de Trinucleotídeo (formato COSMIC)
+
+Para cada SNP (não INDEL), o relatório inclui as bases imediatamente vizinhas na sequência de referência:
+
+```
+BASE_ANTERIOR[REF>ALT]BASE_POSTERIOR
+```
+
+Exemplos:
+
+| Posição | Contexto | Significado |
+|---------|----------|-------------|
+| Meio da sequência | `T[A>G]C` | Base anterior T, posterior C |
+| Início (pos 1) | `_[A>G]C` | Sem base anterior |
+| Final | `T[G>T]_` | Sem base posterior |
+
+O padrão `_` é usado como sentinela nas bordas da sequência.
+
 Exemplo:
 
 ```
@@ -291,17 +314,18 @@ GCT → TAA  →  Ala → STOP →  NONSENSE
 
 ## Limitações Atuais
 
-- Sem informação de qualidade de leitura
+- Sem informação de qualidade de leitura (suporte FASTQ planejado)
 - Não identifica SNPs em repetições
 - Sem exportação VCF
-- Anotação assume reading frame +1 (começa na posição 1); ORFs em outros frames não são suportados
+- Anotação assume reading frame +1 (começa na posição 1); ORFs em outros frames não são suportados (planejado no Milestone 3)
+- Regiões codificantes vs não-codificantes ainda não configuráveis pelo usuário (planejado no Milestone 3)
 
 ## Próximos Passos Recomendados
 
-1. **VCF Export**: Formato padrão da indústria
-2. **Filtros**: Qualidade, profundidade, etc.
-3. **Múltiplos reading frames**: Suporte a frame +2 e +3
-4. **Contexto de sequência**: Análise de trinucleotídeos vizinhos
+1. **Regiões CDS configuráveis**: Permitir ao usuário definir quais regiões são codificantes
+2. **Múltiplos reading frames**: Suporte a frame +2 e +3
+3. **VCF Export**: Formato padrão da indústria
+4. **FASTQ / Phred**: Suporte a qualidade de leitura
 
 ## Licença
 

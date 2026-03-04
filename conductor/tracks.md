@@ -8,7 +8,14 @@ This file tracks all major tracks for the project. Each track has its own detail
 Folder: `conductor/tracks/fasta_cli_20260227/`
 Status: ✅ Complete
 
-## multi_sample_20260304 — Multi-Sample Support via Single FASTA File
-Folder: `conductor/tracks/multi_sample_20260304/`
+## trinucleotide_context_20260304 — Trinucleotide Context (COSMIC format)
+Folder: N/A (single-session feature, no dedicated track folder)
 Status: ✅ Complete
+
+Changes:
+- Added `get_trinucleotide_context()` to `main.py`
+- Added `"context"` key to SNP dicts (SNPs only, not INDELs)
+- Updated `print_snp_report` and `generate_snp_file` with Contexto column
+- 8 new tests added; 70 total passing, 93% coverage
+- Commit: `736f2be`
 

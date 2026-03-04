@@ -1,11 +1,31 @@
 """
 SNPTracker - Detector de SNPs
 
-Propósito: Comparar uma sequência de referência com uma amostra
-para detectar mutações pontuais (SNPs - Single Nucleotide Polymorphisms).
+Propósito: Comparar uma sequência de DNA de referência com uma ou mais
+amostras para detectar mutações pontuais (SNPs - Single Nucleotide
+Polymorphisms) e indels (inserções e deleções).
 
-Um SNP é uma variação em uma única posição nucleotídica entre
-diferentes indivíduos ou amostras.
+Módulos relacionados:
+    fasta_parser.py  — leitura de arquivos FASTA
+    annotation.py    — anotação funcional baseada no código genético padrão
+
+Formato do dict de SNP retornado por detect_snps():
+    {
+        "position":  int   — posição 1-indexed na sequência
+        "reference": str   — base da referência (A/C/G/T ou '-' para inserções)
+        "alternate": str   — base da amostra    (A/C/G/T ou '-' para deleções)
+        "type":      str   — "TRANSITION" | "TRANSVERSION" | "INSERTION" | "DELETION"
+        "annotation":str   — "SYNONYMOUS" | "NON_SYNONYMOUS" | "NONSENSE" | "NON_CODING"
+        "context":   str   — contexto COSMIC ex: "T[A>G]C"  (ausente em INDELs)
+    }
+
+Uso via CLI:
+    # Par único (strings ou arquivos FASTA)
+    python main.py --reference "ACTG" --sample "ACTT"
+    python main.py --reference ref.fasta --sample sample.fasta --output out.txt
+
+    # Multi-amostra (primeira sequência do FASTA = referência)
+    python main.py --input data/sequences.txt
 """
 
 
@@ -41,14 +61,21 @@ def get_trinucleotide_context(
 
 def detect_snps(reference: str, sample: str) -> list[dict]:
     """
-    Compara duas sequências e identifica SNPs.
+    Compara duas sequências e identifica SNPs e indels.
+
+    Realiza comparação posição a posição até o comprimento mínimo das
+    sequências (SNPs e substituições). Diferenças de comprimento são
+    reportadas como INSERTION ou DELETION ao final da lista.
+
+    INDELs recebem annotation='NON_CODING' e não possuem a chave 'context'.
+    SNPs recebem todas as chaves, incluindo 'context' no formato COSMIC.
 
     Args:
-        reference: Sequência de referência (string)
-        sample: Sequência da amostra (string)
+        reference: Sequência de referência (string ou uppercase).
+        sample: Sequência da amostra (string ou uppercase).
 
     Returns:
-        list: Lista de dicionários com informações dos SNPs
+        list[dict]: Lista de SNPs. Ver formato no topo deste módulo.
     """
     snps = []
 
@@ -77,7 +104,7 @@ def detect_snps(reference: str, sample: str) -> list[dict]:
             }
             snps.append(snp_info)
 
-    # Detecta diferenças de tamanho (indels)
+    # Detecta diferenças de tamanho — reportadas como INDELs sem 'context'
     if len(ref) != len(smp):
         if len(ref) > len(smp):
             for i in range(min_length, len(ref)):

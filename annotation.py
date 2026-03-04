@@ -2,9 +2,24 @@
 SNPTracker - SNP Annotation Module
 
 Provides codon translation and functional annotation of SNPs
-using the standard genetic code.
+using the standard genetic code (all 64 codons).
 
-Assumes reading frame starts at position 1 (frame +1).
+Assumptions:
+    - Reading frame starts at position 1 (frame +1).
+    - Sequences are uppercase strings containing only A, C, G, T.
+    - Position is always 1-indexed.
+
+Annotation categories returned by annotate_snp():
+    SYNONYMOUS     — substitution that does not change the amino acid
+    NON_SYNONYMOUS — substitution that changes the amino acid
+    NONSENSE       — substitution that introduces a stop codon (TAA/TAG/TGA)
+    NON_CODING     — SNP falls in an incomplete codon or sequence too short
+
+Public API:
+    CODON_TABLE              — dict mapping 3-mer → amino acid or "STOP"
+    get_codon(seq, pos)      — returns the triplet containing 1-indexed pos
+    translate_codon(codon)   — returns amino acid abbreviation or "STOP"
+    annotate_snp(pos, ref, alt) — returns one of the four annotation strings
 """
 
 CODON_TABLE: dict[str, str] = {
