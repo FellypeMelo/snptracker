@@ -54,6 +54,21 @@ class TestMainLogic(unittest.TestCase):
         self.assertEqual(snps[0]['alternate'], 'T')
         self.assertEqual(snps[0]['type'], 'TRANSVERSION')
 
+    def test_detect_snps_includes_annotation_field(self):
+        """Every SNP dict must contain the 'annotation' key."""
+        snps = detect_snps("GCTAAA", "GTTAAA")
+        self.assertTrue(len(snps) > 0)
+        for snp in snps:
+            self.assertIn('annotation', snp)
+
+    def test_detect_snps_indel_annotation_is_non_coding(self):
+        """INSERTION and DELETION SNPs must have annotation='NON_CODING'."""
+        ins_snps = detect_snps("ACTG", "ACTGA")
+        self.assertEqual(ins_snps[0]['annotation'], 'NON_CODING')
+
+        del_snps = detect_snps("ACTG", "ACT")
+        self.assertEqual(del_snps[0]['annotation'], 'NON_CODING')
+
     def test_detect_snps_insertion(self):
         """Test detection with an insertion."""
         ref = "ACTG"

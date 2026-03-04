@@ -12,6 +12,7 @@ diferentes indivíduos ou amostras.
 import argparse
 import os
 from fasta_parser import read_fasta
+from annotation import annotate_snp
 
 
 def detect_snps(reference: str, sample: str) -> list[dict]:
@@ -45,6 +46,7 @@ def detect_snps(reference: str, sample: str) -> list[dict]:
                 "reference": ref_base,
                 "alternate": smp_base,
                 "type": classify_mutation(ref_base, smp_base),
+                "annotation": annotate_snp(i + 1, ref, smp),
             }
             snps.append(snp_info)
 
@@ -58,6 +60,7 @@ def detect_snps(reference: str, sample: str) -> list[dict]:
                         "reference": ref[i],
                         "alternate": "-",
                         "type": "DELETION",
+                        "annotation": "NON_CODING",
                     }
                 )
         else:
@@ -68,6 +71,7 @@ def detect_snps(reference: str, sample: str) -> list[dict]:
                         "reference": "-",
                         "alternate": smp[i],
                         "type": "INSERTION",
+                        "annotation": "NON_CODING",
                     }
                 )
 
@@ -114,13 +118,14 @@ def print_snp_report(snps: list[dict], reference: str, sample: str) -> None:
 
     if snps:
         print("\n" + "-" * 60)
-        print(f"{'Posição':<10} {'Ref':<5} {'Alt':<5} {'Tipo':<15}")
+        print(f"{'Posição':<10} {'Ref':<5} {'Alt':<5} {'Tipo':<15} {'Anotação'}")
         print("-" * 60)
 
         for snp in snps:
             print(
                 f"{snp['position']:<10} {snp['reference']:<5} "
-                f"{snp['alternate']:<5} {snp['type']:<15}"
+                f"{snp['alternate']:<5} {snp['type']:<15} "
+                f"{snp.get('annotation', '')}"
             )
     else:
         print("\nNenhuma variação detectada (sequências idênticas)")
@@ -138,13 +143,14 @@ def generate_snp_file(snps: list[dict], output_file: str = "snps_report.txt") ->
         f.write("SNPTRACKER - RELATÓRIO DE SNPs\n")
         f.write("=" * 60 + "\n\n")
         f.write(f"Total de SNPs: {len(snps)}\n\n")
-        f.write(f"{'Posição':<10} {'Ref':<5} {'Alt':<5} {'Tipo':<15}\n")
+        f.write(f"{'Posição':<10} {'Ref':<5} {'Alt':<5} {'Tipo':<15} {'Anotação'}\n")
         f.write("-" * 60 + "\n")
 
         for snp in snps:
             f.write(
                 f"{snp['position']:<10} {snp['reference']:<5} "
-                f"{snp['alternate']:<5} {snp['type']:<15}\n"
+                f"{snp['alternate']:<5} {snp['type']:<15} "
+                f"{snp.get('annotation', '')}\n"
             )
 
     print(f"\nRelatório salvo em: {output_file}")
