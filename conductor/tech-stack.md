@@ -7,8 +7,9 @@
 ## Modules
 - **`main.py`:** CLI entrypoint, SNP detection, mutation classification, reporting.
   Key functions:
-  - `detect_snps(reference, sample)` — compares two sequences base-by-base and returns a list of SNP dicts.
+  - `detect_snps(reference, sample, cds_regions=None)` — compares two sequences base-by-base and returns a list of SNP dicts. Accepts optional `cds_regions` to restrict functional annotation to coding regions.
   - `classify_mutation(ref_base, alt_base)` — classifies TRANSITION or TRANSVERSION.
+  - `parse_cds_regions(cds_str)` — parses CLI string `'1-90,100-150'` into `[(1,90),(100,150)]`.
   - `get_trinucleotide_context(reference, position, ref_base, alt_base)` — returns COSMIC-format trinucleotide context (`X[R>A]Y`).
   - `run_multi_sample(reference, samples)` — batch detection across multiple samples.
   - `print_snp_report` / `generate_snp_file` — output formatting (terminal and file).
@@ -25,7 +26,9 @@
   Key functions:
   - `get_codon(sequence, position)` — returns the triplet containing the given 1-indexed position.
   - `translate_codon(codon)` — returns amino acid abbreviation or `"STOP"`.
-  - `annotate_snp(position, ref_sequence, alt_sequence)` — returns `"SYNONYMOUS"`, `"NON_SYNONYMOUS"`, `"NONSENSE"`, or `"NON_CODING"`.
+  - `annotate_snp(position, ref_sequence, alt_sequence)` — returns one of the four annotation strings (entire sequence treated as coding).
+  - `is_in_cds(position, cds_regions)` — returns True if position falls within any CDS region.
+  - `annotate_snp_with_regions(position, ref_sequence, alt_sequence, cds_regions=None)` — like `annotate_snp` but respects CDS boundaries; positions outside any region return `NON_CODING`.
 
 ## SNP Dict Format
 

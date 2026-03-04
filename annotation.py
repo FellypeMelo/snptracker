@@ -19,7 +19,13 @@ Public API:
     CODON_TABLE              — dict mapping 3-mer → amino acid or "STOP"
     get_codon(seq, pos)      — returns the triplet containing 1-indexed pos
     translate_codon(codon)   — returns amino acid abbreviation or "STOP"
-    annotate_snp(pos, ref, alt) — returns one of the four annotation strings
+    annotate_snp(pos, ref, alt)
+        — annotates a SNP treating the entire sequence as coding (frame +1)
+    is_in_cds(pos, cds_regions)
+        — returns True if position is within any (start, end) CDS region
+    annotate_snp_with_regions(pos, ref, alt, cds_regions=None)
+        — like annotate_snp but returns NON_CODING for positions outside CDS;
+          cds_regions=None falls back to annotate_snp (backwards-compatible)
 """
 
 CODON_TABLE: dict[str, str] = {
@@ -125,6 +131,52 @@ def translate_codon(codon: str) -> str:
             f"Invalid codon '{codon}'. Expected 3 uppercase bases (A/C/G/T)."
         )
     return CODON_TABLE[codon]
+
+
+def is_in_cds(position: int, cds_regions: list[tuple[int, int]]) -> bool:
+    """Returns True if position falls within any CDS region.
+
+    Args:
+        position: 1-indexed SNP position.
+        cds_regions: List of (start, end) tuples, both 1-indexed inclusive.
+
+    Returns:
+        bool: True if position is within at least one region.
+    """
+    return any(start <= position <= end for start, end in cds_regions)
+
+
+def annotate_snp_with_regions(
+    position: int,
+    ref_sequence: str,
+    alt_sequence: str,
+    cds_regions: list[tuple[int, int]] | None = None,
+) -> str:
+    """Annotates a SNP respecting CDS boundaries.
+
+    If cds_regions is None, falls back to annotate_snp() (entire sequence
+    treated as coding — backwards-compatible behavior).
+    If cds_regions is an empty list, every position returns NON_CODING.
+    Otherwise only positions within a CDS region receive functional
+    annotation; positions outside return NON_CODING.
+
+    Args:
+        position: 1-indexed SNP position.
+        ref_sequence: Full reference DNA sequence (uppercase).
+        alt_sequence: Full alternate DNA sequence (uppercase).
+        cds_regions: List of (start, end) tuples, or None.
+
+    Returns:
+        str: "SYNONYMOUS" | "NON_SYNONYMOUS" | "NONSENSE" | "NON_CODING"
+    """
+    if cds_regions is None:
+        return annotate_snp(position, ref_sequence, alt_sequence)
+
+    if not is_in_cds(position, cds_regions):
+        return "NON_CODING"
+
+    return annotate_snp(position, ref_sequence, alt_sequence)
+
 
 
 def annotate_snp(position: int, ref_sequence: str, alt_sequence: str) -> str:

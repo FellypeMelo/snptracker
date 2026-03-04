@@ -31,6 +31,7 @@ Amostra:    A C T G G T A G A T A
 - **Classificação de Mutações**: Identifica transitions e transversions.
 - **Detecção de Indels**: Identifica inserções e deleções.
 - **Anotação Funcional**: Classifica cada SNP como SYNONYMOUS, NON_SYNONYMOUS, NONSENSE ou NON_CODING com base no código genético padrão.
+- **Regiões Codificantes (CDS)**: O usuário pode definir quais regiões da sequência são codificantes. SNPs fora das regiões recebem `NON_CODING` automaticamente.
 - **Contexto de Trinucleotídeo**: Reporta as bases vizinhas de cada SNP no formato COSMIC (`BASE_ANTERIOR[REF>ALT]BASE_POSTERIOR`).
 - **Relatório Estruturado**: Saída formatada em tabela com colunas de anotação e contexto.
 - **Exportação**: Salva resultados em arquivo texto customizável.
@@ -103,6 +104,10 @@ python main.py --reference reference.fasta --sample sample.fasta
 
 # Customizando o arquivo de saída
 python main.py --reference ref.fa --sample smp.fa --output meu_relatorio.txt
+
+# Definindo regiões codificantes (CDS) — SNPs fora recebem NON_CODING
+python main.py --reference ref.fa --sample smp.fa --cds "1-90"
+python main.py --reference ref.fa --sample smp.fa --cds "1-90,100-150"
 ```
 
 > ⚠️ `--reference` e `--input` são **mutuamente exclusivos** — use um ou outro, nunca os dois.
@@ -239,7 +244,7 @@ snptracker/
 
 #### Milestone 3: Análises Avançadas 📊
 - [x] Contexto de trinucleotídeo (formato COSMIC: `X[R>A]Y`)
-- [ ] Regiões codificantes vs não-codificantes
+- [x] Regiões codificantes vs não-codificantes (`--cds "start-end,..."`)
 - [ ] Múltiplos reading frames
 - [ ] Análise de qualidade (Phred scores / FASTQ)
 - [ ] Predição funcional (SIFT, PolyPhen)
@@ -317,15 +322,15 @@ GCT → TAA  →  Ala → STOP →  NONSENSE
 - Sem informação de qualidade de leitura (suporte FASTQ planejado)
 - Não identifica SNPs em repetições
 - Sem exportação VCF
-- Anotação assume reading frame +1 (começa na posição 1); ORFs em outros frames não são suportados (planejado no Milestone 3)
-- Regiões codificantes vs não-codificantes ainda não configuráveis pelo usuário (planejado no Milestone 3)
+- Anotação assume reading frame +1 dentro de cada região CDS; frames +2 e +3 não são suportados (planejado no Milestone 3)
+- `--cds` disponível apenas no modo par único (`--reference`/`--sample`); suporte multi-amostra planejado
 
 ## Próximos Passos Recomendados
 
-1. **Regiões CDS configuráveis**: Permitir ao usuário definir quais regiões são codificantes
-2. **Múltiplos reading frames**: Suporte a frame +2 e +3
+1. **Múltiplos reading frames**: Suporte a frame +2 e +3
+2. **FASTQ / Phred**: Suporte a qualidade de leitura
 3. **VCF Export**: Formato padrão da indústria
-4. **FASTQ / Phred**: Suporte a qualidade de leitura
+4. **SIFT / PolyPhen**: Predição funcional computacional
 
 ## Licença
 

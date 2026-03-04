@@ -8,7 +8,19 @@ This file tracks all major tracks for the project. Each track has its own detail
 Folder: `conductor/tracks/fasta_cli_20260227/`
 Status: ✅ Complete
 
-## trinucleotide_context_20260304 — Trinucleotide Context (COSMIC format)
+## cds_regions_20260304 — CDS Regions (Coding vs Non-Coding)
+Folder: N/A (single-session feature, no dedicated track folder)
+Status: ✅ Complete
+
+Changes:
+- Added `is_in_cds()` and `annotate_snp_with_regions()` to `annotation.py`
+- Added `parse_cds_regions()` to `main.py`
+- `detect_snps()` gains optional `cds_regions` parameter (backwards-compatible)
+- `parse_args()` gains `--cds` argument (`'start-end,start-end'` format)
+- `_run_single_sample_mode` wires `--cds` into `detect_snps`
+- 20 new tests added; 90 total passing, 94% coverage
+
+
 Folder: N/A (single-session feature, no dedicated track folder)
 Status: ✅ Complete
 

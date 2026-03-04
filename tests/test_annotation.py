@@ -1,5 +1,5 @@
 import unittest
-from annotation import annotate_snp, get_codon, translate_codon
+from annotation import annotate_snp, get_codon, translate_codon, is_in_cds, annotate_snp_with_regions
 
 
 class TestTranslateCodon(unittest.TestCase):
@@ -128,6 +128,75 @@ class TestAnnotateSnp(unittest.TestCase):
         ref = "GCTAAA"
         alt = "GCTAAG"
         self.assertEqual(annotate_snp(6, ref, alt), "SYNONYMOUS")
+
+
+class TestIsInCds(unittest.TestCase):
+
+    def test_position_inside_single_region(self):
+        """Position within the only CDS region returns True."""
+        self.assertTrue(is_in_cds(5, [(1, 10)]))
+
+    def test_position_outside_single_region(self):
+        """Position beyond the CDS region returns False."""
+        self.assertFalse(is_in_cds(15, [(1, 10)]))
+
+    def test_empty_cds_list(self):
+        """No CDS regions defined — every position is NON_CODING."""
+        self.assertFalse(is_in_cds(5, []))
+
+    def test_position_on_exact_boundaries(self):
+        """Start and end positions are inclusive."""
+        self.assertTrue(is_in_cds(1, [(1, 10)]))
+        self.assertTrue(is_in_cds(10, [(1, 10)]))
+
+    def test_position_in_second_of_two_regions(self):
+        """Position inside the second region returns True."""
+        self.assertTrue(is_in_cds(80, [(10, 50), (70, 120)]))
+
+    def test_position_between_two_regions(self):
+        """Position in the gap between two regions returns False."""
+        self.assertFalse(is_in_cds(60, [(10, 50), (70, 120)]))
+
+
+class TestAnnotateSnpWithRegions(unittest.TestCase):
+
+    def test_none_regions_behaves_like_annotate_snp(self):
+        """cds_regions=None falls back to annotate_snp() behavior."""
+        ref = "GCTAAA"
+        alt = "GCCAAA"
+        self.assertEqual(
+            annotate_snp_with_regions(3, ref, alt, cds_regions=None),
+            "SYNONYMOUS"
+        )
+
+    def test_position_outside_cds_is_non_coding(self):
+        """SNP outside every CDS region returns NON_CODING."""
+        ref = "GCTAAAGTT"
+        alt = "GCTAATGTT"
+        # pos 6 is outside region (1, 3)
+        self.assertEqual(
+            annotate_snp_with_regions(6, ref, alt, cds_regions=[(1, 3)]),
+            "NON_CODING"
+        )
+
+    def test_position_inside_cds_annotated_normally(self):
+        """SNP inside a CDS region gets full functional annotation."""
+        ref = "GCTAAA"
+        alt = "GTTAAA"
+        # pos 2 → GCT→GTT → Ala→Val → NON_SYNONYMOUS
+        self.assertEqual(
+            annotate_snp_with_regions(2, ref, alt, cds_regions=[(1, 6)]),
+            "NON_SYNONYMOUS"
+        )
+
+    def test_empty_cds_list_returns_non_coding(self):
+        """cds_regions=[] forces every SNP to NON_CODING."""
+        ref = "GCTAAA"
+        alt = "GTTAAA"
+        self.assertEqual(
+            annotate_snp_with_regions(2, ref, alt, cds_regions=[]),
+            "NON_CODING"
+        )
 
 
 if __name__ == "__main__":

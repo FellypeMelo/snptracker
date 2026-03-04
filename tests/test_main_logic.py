@@ -9,6 +9,7 @@ from main import (
     print_snp_report,
     run_multi_sample,
     get_trinucleotide_context,
+    parse_cds_regions,
 )
 
 class TestMainLogic(unittest.TestCase):
@@ -221,6 +222,51 @@ class TestRunModes(unittest.TestCase):
         for f in ["snps_report_s1.txt"]:
             if os.path.exists(f):
                 os.remove(f)
+
+
+class TestParseCdsRegions(unittest.TestCase):
+
+    def test_single_region(self):
+        """'1-90' parses to [(1, 90)]."""
+        self.assertEqual(parse_cds_regions("1-90"), [(1, 90)])
+
+    def test_multiple_regions(self):
+        """'1-90,100-150' parses to [(1, 90), (100, 150)]."""
+        self.assertEqual(
+            parse_cds_regions("1-90,100-150"),
+            [(1, 90), (100, 150)]
+        )
+
+    def test_invalid_format_raises(self):
+        """Non-numeric input raises ValueError."""
+        with self.assertRaises(ValueError):
+            parse_cds_regions("abc")
+
+    def test_start_greater_than_end_raises(self):
+        """start > end raises ValueError."""
+        with self.assertRaises(ValueError):
+            parse_cds_regions("90-10")
+
+
+class TestDetectSnpsWithCds(unittest.TestCase):
+
+    def test_snp_outside_cds_returns_non_coding(self):
+        """SNP outside CDS region gets annotation NON_CODING."""
+        # ref="GCTGCT", pos 4 is G→T; region only covers (1, 3)
+        snps = detect_snps("GCTGCT", "GCTTCT", cds_regions=[(1, 3)])
+        self.assertEqual(snps[0]["annotation"], "NON_CODING")
+
+    def test_snp_inside_cds_returns_functional_annotation(self):
+        """SNP inside CDS region gets functional annotation."""
+        # ref="GCTAAA", pos 2 → GCT→GTT → NON_SYNONYMOUS
+        snps = detect_snps("GCTAAA", "GTTAAA", cds_regions=[(1, 6)])
+        self.assertNotEqual(snps[0]["annotation"], "NON_CODING")
+
+    def test_no_cds_regions_behaves_as_before(self):
+        """detect_snps without cds_regions is fully backwards-compatible."""
+        snps_old = detect_snps("GCTAAA", "GTTAAA")
+        snps_new = detect_snps("GCTAAA", "GTTAAA", cds_regions=None)
+        self.assertEqual(snps_old[0]["annotation"], snps_new[0]["annotation"])
 
 
 class TestGetTrinucleotideContext(unittest.TestCase):

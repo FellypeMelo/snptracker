@@ -97,5 +97,21 @@ class TestMultiSampleCLI(unittest.TestCase):
         self.assertEqual(len(result["sample2"]), 0)
 
 
+    def test_parse_args_cds_single_region(self):
+        """--cds '1-90' is accepted and stored."""
+        args = parse_args(["--reference", "ACTG", "--sample", "ACTT", "--cds", "1-90"])
+        self.assertEqual(args.cds, "1-90")
+
+    def test_parse_args_cds_multiple_regions(self):
+        """--cds '1-90,100-150' is accepted."""
+        args = parse_args(["--reference", "ACTG", "--sample", "ACTT", "--cds", "1-90,100-150"])
+        self.assertEqual(args.cds, "1-90,100-150")
+
+    def test_parse_args_cds_default_is_none(self):
+        """--cds is optional; defaults to None."""
+        args = parse_args(["--reference", "ACTG", "--sample", "ACTT"])
+        self.assertIsNone(args.cds)
+
+
 if __name__ == "__main__":
     unittest.main()

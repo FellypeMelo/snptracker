@@ -24,6 +24,10 @@ Uso via CLI:
     python main.py --reference "ACTG" --sample "ACTT"
     python main.py --reference ref.fasta --sample sample.fasta --output out.txt
 
+    # Com regiões codificantes explícitas (1-indexed, inclusive)
+    python main.py --reference ref.fasta --sample sample.fasta --cds "1-90"
+    python main.py --reference ref.fasta --sample sample.fasta --cds "1-90,100-150"
+
     # Multi-amostra (primeira sequência do FASTA = referência)
     python main.py --input data/sequences.txt
 """
@@ -32,7 +36,39 @@ Uso via CLI:
 import argparse
 import os
 from fasta_parser import read_fasta
-from annotation import annotate_snp
+from annotation import annotate_snp, annotate_snp_with_regions
+
+
+def parse_cds_regions(cds_str: str) -> list[tuple[int, int]]:
+    """Parses a CDS string like '1-90,100-150' into a list of tuples.
+
+    Args:
+        cds_str: Comma-separated ranges in 'start-end' format (1-indexed).
+
+    Returns:
+        list[tuple[int, int]]: List of (start, end) tuples.
+
+    Raises:
+        ValueError: If the format is invalid or start > end.
+    """
+    regions = []
+    for part in cds_str.split(","):
+        part = part.strip()
+        try:
+            start_str, end_str = part.split("-")
+            start, end = int(start_str), int(end_str)
+        except ValueError:
+            raise ValueError(
+                f"Invalid CDS region '{part}'. Expected format: 'start-end' "
+                f"(e.g. '1-90')."
+            )
+        if start > end:
+            raise ValueError(
+                f"Invalid CDS region '{part}': start ({start}) must be "
+                f"less than or equal to end ({end})."
+            )
+        regions.append((start, end))
+    return regions
 
 
 def get_trinucleotide_context(
@@ -59,7 +95,11 @@ def get_trinucleotide_context(
     return f"{prev}[{ref_base}>{alt_base}]{next_}"
 
 
-def detect_snps(reference: str, sample: str) -> list[dict]:
+def detect_snps(
+    reference: str,
+    sample: str,
+    cds_regions: list[tuple[int, int]] | None = None,
+) -> list[dict]:
     """
     Compara duas sequências e identifica SNPs e indels.
 
@@ -73,6 +113,10 @@ def detect_snps(reference: str, sample: str) -> list[dict]:
     Args:
         reference: Sequência de referência (string ou uppercase).
         sample: Sequência da amostra (string ou uppercase).
+        cds_regions: Lista opcional de regiões codificantes como tuplas
+            (start, end) 1-indexed inclusive. Se None, toda a sequência
+            é tratada como codificante (comportamento padrão). Se lista
+            vazia, todos os SNPs recebem annotation='NON_CODING'.
 
     Returns:
         list[dict]: Lista de SNPs. Ver formato no topo deste módulo.
@@ -97,7 +141,9 @@ def detect_snps(reference: str, sample: str) -> list[dict]:
                 "reference": ref_base,
                 "alternate": smp_base,
                 "type": classify_mutation(ref_base, smp_base),
-                "annotation": annotate_snp(i + 1, ref, smp),
+                "annotation": annotate_snp_with_regions(
+                    i + 1, ref, smp, cds_regions
+                ),
                 "context": get_trinucleotide_context(
                     ref, i + 1, ref_base, smp_base
                 ),
@@ -278,6 +324,16 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--output", default="snps_report.txt", help="Nome do arquivo de saída"
     )
+    parser.add_argument(
+        "--cds",
+        default=None,
+        help=(
+            "Regiões codificantes (CDS) no formato 'start-end,start-end' "
+            "(1-indexed, ex: '1-90,100-150'). Apenas aplicável com "
+            "--reference. Se omitido, toda a sequência é tratada como "
+            "codificante."
+        ),
+    )
     namespace = parser.parse_args(args)
     if namespace.reference is not None and namespace.sample is None:
         parser.error("--sample é obrigatório quando --reference é utilizado.")
@@ -301,7 +357,11 @@ def _run_single_sample_mode(args: argparse.Namespace) -> None:
     reference = load_sequence(args.reference)
     sample = load_sequence(args.sample)
 
-    snps = detect_snps(reference, sample)
+    cds_regions = None
+    if args.cds:
+        cds_regions = parse_cds_regions(args.cds)
+
+    snps = detect_snps(reference, sample, cds_regions=cds_regions)
     print_snp_report(snps, reference, sample)
 
     if snps:
