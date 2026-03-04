@@ -15,6 +15,30 @@ from fasta_parser import read_fasta
 from annotation import annotate_snp
 
 
+def get_trinucleotide_context(
+    reference: str,
+    position: int,
+    ref_base: str,
+    alt_base: str,
+) -> str:
+    """Returns the trinucleotide context of a SNP in COSMIC format.
+
+    Args:
+        reference: Full reference sequence (uppercase).
+        position: 1-indexed SNP position.
+        ref_base: Reference base at this position.
+        alt_base: Alternate base at this position.
+
+    Returns:
+        str: Context string in format 'X[R>A]Y', where X and Y are
+             the immediate flanking bases, or '_' at sequence edges.
+    """
+    idx = position - 1
+    prev = reference[idx - 1] if idx > 0 else "_"
+    next_ = reference[idx + 1] if idx < len(reference) - 1 else "_"
+    return f"{prev}[{ref_base}>{alt_base}]{next_}"
+
+
 def detect_snps(reference: str, sample: str) -> list[dict]:
     """
     Compara duas sequências e identifica SNPs.
@@ -47,6 +71,9 @@ def detect_snps(reference: str, sample: str) -> list[dict]:
                 "alternate": smp_base,
                 "type": classify_mutation(ref_base, smp_base),
                 "annotation": annotate_snp(i + 1, ref, smp),
+                "context": get_trinucleotide_context(
+                    ref, i + 1, ref_base, smp_base
+                ),
             }
             snps.append(snp_info)
 
@@ -117,15 +144,19 @@ def print_snp_report(snps: list[dict], reference: str, sample: str) -> None:
     print(f"\nTotal de variações encontradas: {len(snps)}")
 
     if snps:
-        print("\n" + "-" * 60)
-        print(f"{'Posição':<10} {'Ref':<5} {'Alt':<5} {'Tipo':<15} {'Anotação'}")
-        print("-" * 60)
+        print("\n" + "-" * 70)
+        print(
+            f"{'Posição':<10} {'Ref':<5} {'Alt':<5} {'Tipo':<15} "
+            f"{'Anotação':<20} {'Contexto'}"
+        )
+        print("-" * 70)
 
         for snp in snps:
             print(
                 f"{snp['position']:<10} {snp['reference']:<5} "
                 f"{snp['alternate']:<5} {snp['type']:<15} "
-                f"{snp.get('annotation', '')}"
+                f"{snp.get('annotation', ''):<20} "
+                f"{snp.get('context', 'N/A')}"
             )
     else:
         print("\nNenhuma variação detectada (sequências idênticas)")
@@ -143,14 +174,15 @@ def generate_snp_file(snps: list[dict], output_file: str = "snps_report.txt") ->
         f.write("SNPTRACKER - RELATÓRIO DE SNPs\n")
         f.write("=" * 60 + "\n\n")
         f.write(f"Total de SNPs: {len(snps)}\n\n")
-        f.write(f"{'Posição':<10} {'Ref':<5} {'Alt':<5} {'Tipo':<15} {'Anotação'}\n")
-        f.write("-" * 60 + "\n")
+        f.write(f"{'Posição':<10} {'Ref':<5} {'Alt':<5} {'Tipo':<15} {'Anotação':<20} {'Contexto'}\n")
+        f.write("-" * 70 + "\n")
 
         for snp in snps:
             f.write(
                 f"{snp['position']:<10} {snp['reference']:<5} "
                 f"{snp['alternate']:<5} {snp['type']:<15} "
-                f"{snp.get('annotation', '')}\n"
+                f"{snp.get('annotation', ''):<20} "
+                f"{snp.get('context', 'N/A')}\n"
             )
 
     print(f"\nRelatório salvo em: {output_file}")

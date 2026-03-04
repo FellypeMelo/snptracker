@@ -2,7 +2,14 @@ import unittest
 import os
 from unittest.mock import patch
 import io
-from main import detect_snps, classify_mutation, generate_snp_file, print_snp_report, run_multi_sample
+from main import (
+    detect_snps,
+    classify_mutation,
+    generate_snp_file,
+    print_snp_report,
+    run_multi_sample,
+    get_trinucleotide_context,
+)
 
 class TestMainLogic(unittest.TestCase):
     def setUp(self):
@@ -96,6 +103,27 @@ class TestMainLogic(unittest.TestCase):
         """Test classification of transversions."""
         self.assertEqual(classify_mutation('A', 'C'), 'TRANSVERSION')
         self.assertEqual(classify_mutation('G', 'T'), 'TRANSVERSION')
+
+    def test_detect_snps_has_context_key(self):
+        """SNP dicts must contain 'context' key."""
+        snps = detect_snps("TACTG", "TACGG")
+        snp = snps[0]
+        self.assertIn('context', snp)
+
+    def test_detect_snps_indel_has_no_context(self):
+        """INSERTION and DELETION dicts must NOT contain 'context' key."""
+        ins_snps = detect_snps("ACTG", "ACTGA")
+        self.assertNotIn('context', ins_snps[0])
+
+        del_snps = detect_snps("ACTG", "ACT")
+        self.assertNotIn('context', del_snps[0])
+
+    def test_detect_snps_context_value_correct(self):
+        """Context value must match COSMIC format for a known SNP."""
+        # ref="TACTG", smp="TACGG" → SNP at pos 4: T>G, flanks T and G... wait
+        # ref="TACTG" pos 4 = T, smp pos 4 = G → prev=ref[2]='C', next=ref[4]='G'
+        snps = detect_snps("TACTG", "TACGG")
+        self.assertEqual(snps[0]['context'], "C[T>G]G")
 
 
 class TestRunMultiSample(unittest.TestCase):
@@ -193,6 +221,44 @@ class TestRunModes(unittest.TestCase):
         for f in ["snps_report_s1.txt"]:
             if os.path.exists(f):
                 os.remove(f)
+
+
+class TestGetTrinucleotideContext(unittest.TestCase):
+
+    def test_middle_position(self):
+        """SNP in the middle returns correct flanking bases."""
+        self.assertEqual(
+            get_trinucleotide_context("TACTG", 3, "C", "G"),
+            "A[C>G]T"
+        )
+
+    def test_left_edge(self):
+        """SNP at position 1 uses '_' as left sentinel."""
+        self.assertEqual(
+            get_trinucleotide_context("ACTG", 1, "A", "G"),
+            "_[A>G]C"
+        )
+
+    def test_right_edge(self):
+        """SNP at last position uses '_' as right sentinel."""
+        self.assertEqual(
+            get_trinucleotide_context("ACTG", 4, "G", "T"),
+            "T[G>T]_"
+        )
+
+    def test_single_base_sequence(self):
+        """SNP in a single-base sequence uses '_' on both sides."""
+        self.assertEqual(
+            get_trinucleotide_context("A", 1, "A", "G"),
+            "_[A>G]_"
+        )
+
+    def test_position_two(self):
+        """SNP at position 2 returns correct flanking bases."""
+        self.assertEqual(
+            get_trinucleotide_context("ACTG", 2, "C", "T"),
+            "A[C>T]T"
+        )
 
 
 if __name__ == "__main__":
