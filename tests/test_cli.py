@@ -1,6 +1,7 @@
 import unittest
 import os
-from main import parse_args, load_sequence
+from main import parse_args, load_sequence, run_multi_sample
+from fasta_parser import read_all_sequences
 
 class TestCLI(unittest.TestCase):
     def setUp(self):
@@ -46,6 +47,55 @@ class TestCLI(unittest.TestCase):
         # argparse usually exits with status 2 on missing required args
         with self.assertRaises(SystemExit):
             parse_args(["--reference", "ACTG"])
+
+
+class TestMultiSampleCLI(unittest.TestCase):
+
+    def setUp(self):
+        self.temp_files = []
+
+    def tearDown(self):
+        for f in self.temp_files:
+            if os.path.exists(f):
+                os.remove(f)
+
+    def create_temp_fasta(self, content):
+        file_path = f"cli_multi_temp_{len(self.temp_files)}.fasta"
+        with open(file_path, 'w') as f:
+            f.write(content)
+        self.temp_files.append(file_path)
+        return file_path
+
+    def test_parse_args_input_flag(self):
+        """Test that --input argument is accepted."""
+        args = parse_args(["--input", "data/sequences.txt"])
+        self.assertEqual(args.input, "data/sequences.txt")
+
+    def test_parse_args_input_mutually_exclusive_with_reference(self):
+        """Test that --input and --reference cannot be used together."""
+        with self.assertRaises(SystemExit):
+            parse_args(["--input", "file.fasta", "--reference", "ACTG", "--sample", "ACTT"])
+
+    def test_parse_args_input_no_sample_required(self):
+        """Test that --sample is not required when --input is used."""
+        args = parse_args(["--input", "data/sequences.txt"])
+        self.assertIsNone(args.reference)
+        self.assertIsNone(args.sample)
+
+    def test_multi_sample_integration(self):
+        """Test full flow: read multi-sequence FASTA and run analysis."""
+        path = self.create_temp_fasta(
+            ">reference\nACTG\n>sample1\nACTT\n>sample2\nACTG"
+        )
+        sequences = read_all_sequences(path)
+        ref_header, ref_seq = sequences[0]
+        samples = sequences[1:]
+        result = run_multi_sample(ref_seq, samples)
+        self.assertIn("sample1", result)
+        self.assertIn("sample2", result)
+        self.assertEqual(len(result["sample1"]), 1)
+        self.assertEqual(len(result["sample2"]), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

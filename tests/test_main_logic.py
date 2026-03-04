@@ -2,7 +2,7 @@ import unittest
 import os
 from unittest.mock import patch
 import io
-from main import detect_snps, classify_mutation, generate_snp_file, print_snp_report
+from main import detect_snps, classify_mutation, generate_snp_file, print_snp_report, run_multi_sample
 
 class TestMainLogic(unittest.TestCase):
     def setUp(self):
@@ -81,6 +81,104 @@ class TestMainLogic(unittest.TestCase):
         """Test classification of transversions."""
         self.assertEqual(classify_mutation('A', 'C'), 'TRANSVERSION')
         self.assertEqual(classify_mutation('G', 'T'), 'TRANSVERSION')
+
+
+class TestRunMultiSample(unittest.TestCase):
+
+    def test_run_multi_sample_empty_list(self):
+        """Test that empty samples list returns empty dict."""
+        result = run_multi_sample("ACTG", [])
+        self.assertEqual(result, {})
+
+    def test_run_multi_sample_single(self):
+        """Test with one sample that has one SNP."""
+        result = run_multi_sample("ACTG", [("sample1", "ACTT")])
+        self.assertIn("sample1", result)
+        self.assertEqual(len(result["sample1"]), 1)
+        self.assertEqual(result["sample1"][0]["position"], 4)
+
+    def test_run_multi_sample_multiple(self):
+        """Test with N samples returns results for each."""
+        samples = [("s1", "ACTT"), ("s2", "GCTG"), ("s3", "ACTG")]
+        result = run_multi_sample("ACTG", samples)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(len(result["s1"]), 1)   # 1 SNP
+        self.assertEqual(len(result["s2"]), 1)   # 1 SNP
+        self.assertEqual(len(result["s3"]), 0)   # idêntica
+
+    def test_run_multi_sample_identical(self):
+        """Test that sample identical to reference returns 0 SNPs."""
+        result = run_multi_sample("ACTG", [("ref_copy", "ACTG")])
+        self.assertEqual(result["ref_copy"], [])
+
+    def test_run_multi_sample_with_indel(self):
+        """Test that indels are detected per sample."""
+        result = run_multi_sample("ACTG", [("del_sample", "ACT")])
+        self.assertEqual(result["del_sample"][0]["type"], "DELETION")
+
+
+class TestRunModes(unittest.TestCase):
+
+    def setUp(self):
+        self.temp_files = []
+
+    def tearDown(self):
+        for f in self.temp_files:
+            if os.path.exists(f):
+                os.remove(f)
+
+    def create_temp_fasta(self, content):
+        path = f"mode_temp_{len(self.temp_files)}.fasta"
+        with open(path, 'w') as f:
+            f.write(content)
+        self.temp_files.append(path)
+        return path
+
+    def test_single_sample_mode_prints_report(self):
+        """Test _run_single_sample_mode produces output."""
+        from main import _run_single_sample_mode, parse_args
+        args = parse_args(["--reference", "ACTG", "--sample", "ACTT"])
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            _run_single_sample_mode(args)
+            output = fake_out.getvalue()
+        self.assertIn("SNPTracker", output)
+
+    def test_multi_sample_mode_no_sequences(self):
+        """Test _run_multi_sample_mode with empty file shows error."""
+        from main import _run_multi_sample_mode, parse_args
+        path = self.create_temp_fasta("")
+        self.temp_files.append(path)
+        args = parse_args(["--input", path])
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            _run_multi_sample_mode(args)
+            output = fake_out.getvalue()
+        self.assertIn("Erro", output)
+
+    def test_multi_sample_mode_only_reference(self):
+        """Test _run_multi_sample_mode with only one sequence shows warning."""
+        from main import _run_multi_sample_mode, parse_args
+        path = self.create_temp_fasta(">ref\nACTG")
+        args = parse_args(["--input", path])
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            _run_multi_sample_mode(args)
+            output = fake_out.getvalue()
+        self.assertIn("Aviso", output)
+
+    def test_multi_sample_mode_full_flow(self):
+        """Test _run_multi_sample_mode with reference + samples."""
+        from main import _run_multi_sample_mode, parse_args
+        path = self.create_temp_fasta(">ref\nACTG\n>s1\nACTT\n>s2\nACTG")
+        args = parse_args(["--input", path])
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            _run_multi_sample_mode(args)
+            output = fake_out.getvalue()
+        self.assertIn("s1", output)
+        self.assertIn("s2", output)
+        # Clean up generated report files
+        for f in ["snps_report_s1.txt"]:
+            if os.path.exists(f):
+                os.remove(f)
+
 
 if __name__ == "__main__":
     unittest.main()

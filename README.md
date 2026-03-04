@@ -80,6 +80,12 @@ Pronto! Não precisa instalar nada mais.
 
 O SNPTracker agora suporta argumentos de linha de comando para maior flexibilidade.
 
+#### Usando arquivo multi-amostra (FASTA com múltiplas sequências):
+```bash
+python main.py --input data/sequences.txt
+```
+A primeira sequência do arquivo é tratada como referência; todas as demais são amostras.
+
 #### Usando strings brutas:
 ```bash
 python main.py --reference "ACTGCTAGCTA" --sample "ACTGCTGGCTA"
@@ -179,7 +185,7 @@ snptracker/
 - [x] Ler sequências de arquivos FASTA
 - [x] Implementar Argparse CLI
 - [x] Criar suíte de testes (TDD)
-- [ ] Suporte a múltiplas amostras vs referência
+- [x] Suporte a múltiplas amostras vs referência
 - [ ] Anotação de SNPs (sinônimo/não-sinônimo)
 
 #### Milestone 3: Análises Avançadas 📊

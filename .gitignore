@@ -1,0 +1,13 @@
+# Ambiente virtual
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Relatórios gerados
+snps_report*.txt
+
+# Cobertura
+.coverage
+htmlcov/
