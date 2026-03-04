@@ -47,11 +47,17 @@ Contém **55+ pares referência/amostra** com SNPs conhecidos:
 python generate_test_data.py
 ```
 
-### 📁 `data/` - Dados Reais (Gitignored)
-Para dados reais de pesquisa:
-- 🚫 **Ignorado pelo Git**
-- 🧬 **Dados de sequenciamento** (WGS, WES, painéis)
-- 🔬 **Amostras clínicas**
+### 📁 `data/` - Dados de Pesquisa
+
+Diretório para dados locais de trabalho. Contém `sequences.txt` como **arquivo de demonstração** do formato multi-amostra.
+
+| Tipo de arquivo | Git | Motivo |
+|---|---|---|
+| `sequences.txt` | ✅ Rastreado | Demonstração do formato multi-amostra |
+| `*.fasta`, `*.fa`, `*.fna` | 🚫 Ignorado | Dados reais de sequenciamento |
+| `*.fastq`, `*.fq`, `*.gz` | 🚫 Ignorado | Dados brutos de sequenciador |
+
+> Para usar seus próprios dados reais, coloque arquivos `.fasta` neste diretório — eles **não serão commitados**.
 
 **Fontes recomendadas:**
 - **dbSNP (NCBI)** - SNPs validados
@@ -76,32 +82,57 @@ Pronto! Não precisa instalar nada mais.
 
 ## Como Usar
 
-### Execução via CLI (Recomendado)
+### Execução via CLI
 
-O SNPTracker agora suporta argumentos de linha de comando para maior flexibilidade.
+O SNPTracker suporta dois modos de operação: **par único** e **multi-amostra**.
 
-#### Usando arquivo multi-amostra (FASTA com múltiplas sequências):
+---
+
+#### Modo 1 — Par único (1 referência × 1 amostra)
+
+Use `--reference` e `--sample`. Aceita sequência bruta ou arquivo FASTA.
+
 ```bash
-python main.py --input data/sequences.txt
-```
-A primeira sequência do arquivo é tratada como referência; todas as demais são amostras.
-
-#### Usando strings brutas:
-```bash
+# Com strings brutas
 python main.py --reference "ACTGCTAGCTA" --sample "ACTGCTGGCTA"
-```
 
-#### Usando arquivos FASTA:
-```bash
+# Com arquivos FASTA
 python main.py --reference reference.fasta --sample sample.fasta
-```
 
-#### Customizando a saída:
-```bash
+# Customizando o arquivo de saída
 python main.py --reference ref.fa --sample smp.fa --output meu_relatorio.txt
 ```
 
-### Exemplo de Saída
+> ⚠️ `--reference` e `--input` são **mutuamente exclusivos** — use um ou outro, nunca os dois.
+
+---
+
+#### Modo 2 — Multi-amostra (1 referência × N amostras)
+
+Use `--input` apontando para um único arquivo FASTA com múltiplas sequências.
+
+**Regra do arquivo:** a **primeira** sequência é sempre a referência; as demais são amostras.
+
+```
+# Formato do arquivo (ex: data/sequences.txt)
+>reference
+ACTGCTAGCTAGCTAGCTA
+>sample1
+ACTGCTGGCTAGATAGCTA
+>sample2
+ACTACTAGCTAGCTAGCTA
+```
+
+```bash
+python main.py --input data/sequences.txt
+```
+
+Um relatório `.txt` separado é gerado para cada amostra que tiver SNPs.
+Amostras idênticas à referência aparecem no terminal mas **não geram arquivo**.
+
+---
+
+#### Saída — Modo par único
 
 ```
 ============================================================
@@ -121,6 +152,21 @@ Posição    Ref   Alt   Tipo
 14         T     A     TRANSVERSION
 
 Relatório salvo em: snps_report.txt
+
+Análise concluída!
+```
+
+#### Saída — Modo multi-amostra
+
+```
+============================================================
+SNPTracker - Análise Multi-Amostra
+============================================================
+Referência: reference (19 bp)
+Amostras:   2
+
+[1/2] sample1 → 2 SNPs → salvo em snps_report_sample1.txt
+[2/2] sample2 → 1 SNPs → salvo em snps_report_sample2.txt
 
 Análise concluída!
 ```

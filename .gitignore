@@ -5,6 +5,9 @@
 __pycache__/
 *.py[cod]
 
+# Pytest
+.pytest_cache/
+
 # Relatórios gerados
 snps_report*.txt
 
