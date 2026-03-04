@@ -13,8 +13,8 @@ SNPTracker is a high-precision tool for detecting and analyzing Single Nucleotid
 
 ## Key Features
 - **Precise Detection:** Base-by-base comparison identifying Transitions, Transversions, and Indels.
+- **Functional Annotation:** Each SNP is annotated as SYNONYMOUS, NON_SYNONYMOUS, NONSENSE, or NON_CODING using the complete standard genetic code (64 codons), implemented locally in `annotation.py`. Integration with external databases (dbSNP/Ensembl) is planned for a future milestone.
 - **Bioinformatic Standards:** FASTA support implemented; FASTQ and industry-standard VCF export planned.
-- **Functional Annotation:** Integration with external databases (dbSNP/Ensembl) to provide clinical context and gene information.
 - **Dual Interface:** A Python library for developers and a Web Dashboard for visual analysis.
 
 ## Project Priority

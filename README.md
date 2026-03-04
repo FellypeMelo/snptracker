@@ -30,7 +30,8 @@ Amostra:    A C T G G T A G A T A
 - **Comparação Base a Base**: Análise posição por posição de alta precisão.
 - **Classificação de Mutações**: Identifica transitions e transversions.
 - **Detecção de Indels**: Identifica inserções e deleções.
-- **Relatório Estruturado**: Saída formatada em tabela.
+- **Anotação Funcional**: Classifica cada SNP como SYNONYMOUS, NON_SYNONYMOUS, NONSENSE ou NON_CODING com base no código genético padrão.
+- **Relatório Estruturado**: Saída formatada em tabela com coluna de anotação.
 - **Exportação**: Salva resultados em arquivo texto customizável.
 
 ## Estrutura de Dados
@@ -145,11 +146,11 @@ Amostra:    ACTGCTGGCTAGATA
 Total de variações encontradas: 3
 
 ------------------------------------------------------------
-Posição    Ref   Alt   Tipo
+Posição    Ref   Alt   Tipo            Anotação
 ------------------------------------------------------------
-7          A     G     TRANSVERSION
-11         C     A     TRANSVERSION
-14         T     A     TRANSVERSION
+7          A     G     TRANSVERSION    NON_SYNONYMOUS
+11         C     A     TRANSVERSION    NON_SYNONYMOUS
+14         T     A     TRANSVERSION    NON_CODING
 
 Relatório salvo em: snps_report.txt
 
@@ -208,6 +209,7 @@ Amostra:    ACTGCTAGCTAGCTA (15 bp)  # Inserção de 4 bases
 ```
 snptracker/
 ├── main.py              # Código principal e CLI
+├── annotation.py        # Anotação funcional de SNPs (código genético)
 ├── fasta_parser.py      # Utilitário de leitura FASTA
 ├── requirements.txt     # Sem dependências
 ├── README.md           # Documentação
@@ -232,7 +234,7 @@ snptracker/
 - [x] Implementar Argparse CLI
 - [x] Criar suíte de testes (TDD)
 - [x] Suporte a múltiplas amostras vs referência
-- [ ] Anotação de SNPs (sinônimo/não-sinônimo)
+- [x] Anotação de SNPs (SYNONYMOUS / NON_SYNONYMOUS / NONSENSE / NON_CODING)
 
 #### Milestone 3: Análises Avançadas 📊
 - [ ] Efeito funcional predito (SIFT, Polyphen)
@@ -257,7 +259,8 @@ for i in range(min_length):
             'position': i + 1,
             'reference': reference[i],
             'alternate': sample[i],
-            'type': classify(reference[i], sample[i])
+            'type': classify_mutation(reference[i], sample[i]),
+            'annotation': annotate_snp(i + 1, reference, sample),
         }
 ```
 
@@ -268,24 +271,37 @@ for i in range(min_length):
 - **SNP**: Mutação comum na população (>1% de frequência)
 
 ### Efeitos Funcionais
-1. **Sinônimo (Silencioso)**: Não altera o aminoácido
-2. **Não-sinônimo**: Altera o aminoácido
-3. **Nonsense**: Cria códon de parada prematuro
+
+A anotação funcional é calculada automaticamente por `annotation.py` com base no código genético padrão (64 códons). Assume reading frame a partir da posição 1.
+
+| Anotação | Descrição |
+|----------|-----------|
+| `SYNONYMOUS` | Troca de base que **não altera** o aminoácido codificado |
+| `NON_SYNONYMOUS` | Troca de base que **altera** o aminoácido codificado |
+| `NONSENSE` | Troca que cria um **códon de parada** (TAA, TAG, TGA) |
+| `NON_CODING` | SNP em região de trinca incompleta, ou indel (sem anotação de códon aplicável) |
+
+Exemplo:
+
+```
+GCT → GCC  →  Ala → Ala  →  SYNONYMOUS
+GCT → GTT  →  Ala → Val  →  NON_SYNONYMOUS
+GCT → TAA  →  Ala → STOP →  NONSENSE
+```
 
 ## Limitações Atuais
 
-- Apenas duas sequências por vez
-- Sem anotação funcional
-- Sem informação de qualidade
+- Sem informação de qualidade de leitura
 - Não identifica SNPs em repetições
 - Sem exportação VCF
+- Anotação assume reading frame +1 (começa na posição 1); ORFs em outros frames não são suportados
 
 ## Próximos Passos Recomendados
 
-1. **Múltiplas Amostras**: Comparar vários indivíduos
-2. **Anotação**: Identificar efeito na proteína
-3. **VCF Export**: Formato padrão da indústria
-4. **Filtros**: Qualidade, profundidade, etc.
+1. **VCF Export**: Formato padrão da indústria
+2. **Filtros**: Qualidade, profundidade, etc.
+3. **Múltiplos reading frames**: Suporte a frame +2 e +3
+4. **Contexto de sequência**: Análise de trinucleotídeos vizinhos
 
 ## Licença
 
