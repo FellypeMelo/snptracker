@@ -422,5 +422,35 @@ class TestAnnotateSnpWithRegionsFrame(unittest.TestCase):
         )
 
 
+class TestAnnotateSnpRobustness(unittest.TestCase):
+    """Tests for annotate_snp graceful handling of invalid sequences."""
+
+    def test_reverse_frame_invalid_base_in_ref_returns_non_coding(self):
+        """Frame -1 with non-ACGT char in ref sequence → NON_CODING, not crash.
+
+        Regression test for: ValueError raised by reverse_complement when
+        load_sequence silently returns a file path as a raw sequence.
+        """
+        self.assertEqual(annotate_snp(1, "REF.FASTA", "ACTG", frame=-1), "NON_CODING")
+
+    def test_reverse_frame_invalid_base_in_alt_returns_non_coding(self):
+        """Frame -1 with non-ACGT char in alt sequence → NON_CODING, not crash."""
+        self.assertEqual(annotate_snp(1, "ACTG", "SAM.FASTA", frame=-1), "NON_CODING")
+
+    def test_reverse_frame_both_invalid_returns_non_coding(self):
+        """Frame -1 with non-ACGT in both sequences → NON_CODING, not crash."""
+        self.assertEqual(
+            annotate_snp(1, "REF.FASTA", "SAM.FASTA", frame=-1), "NON_CODING"
+        )
+
+    def test_reverse_frame_minus2_invalid_sequence_returns_non_coding(self):
+        """Frame -2 with invalid sequence → NON_CODING, not crash."""
+        self.assertEqual(annotate_snp(1, "REF.FASTA", "ACTG", frame=-2), "NON_CODING")
+
+    def test_forward_frame_invalid_sequence_already_non_coding(self):
+        """Forward frame with invalid bases already returns NON_CODING (pre-existing)."""
+        self.assertEqual(annotate_snp(1, "REF.FASTA", "SAM.FASTA", frame=1), "NON_CODING")
+
+
 if __name__ == "__main__":
     unittest.main()

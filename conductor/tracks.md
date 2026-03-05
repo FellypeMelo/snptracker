@@ -31,3 +31,33 @@ Changes:
 - 8 new tests added; 70 total passing, 93% coverage
 - Commit: `736f2be`
 
+
+## reading_frames_20260305 — Multiple Reading Frames
+Folder: N/A (single-session feature, no dedicated track folder)
+Status: ✅ Complete
+
+Changes:
+- Added `reverse_complement()` to `annotation.py`
+- `get_codon()` gains `frame` param: +1/+2/+3 (forward), -1/-2/-3 (reverse complement)
+- `annotate_snp()` and `annotate_snp_with_regions()` gain `frame` param (default=1)
+- `detect_snps()` gains `frame` param (default=1, backwards-compatible)
+- `parse_args()` gains `--frame` argument (choices: 1,2,3,-1,-2,-3; default: 1)
+- `print_snp_report()` displays active reading frame in header
+- Commit: `52b46e1`
+
+## bugfix_frame_robustness_20260305 — Frame Robustness & File Path Validation
+Folder: N/A
+Status: ✅ Complete
+
+Changes:
+- Fix 1 (annotation.py): `annotate_snp()` validates `frame` before codon lookup,
+  then wraps `get_codon()` in try/except ValueError. Invalid-base sequences
+  (e.g., a file path passed as a sequence) return NON_CODING instead of crashing.
+  Invalid frame values still raise ValueError.
+- Fix 2 (main.py): `load_sequence()` raises FileNotFoundError when the argument
+  has a file extension or directory separator but the file does not exist.
+  Prevents a mistyped filename from being silently treated as a raw DNA sequence.
+- Root cause: reverse frames call reverse_complement() which validates characters
+  strictly; forward frames swallowed the same error silently via translate_codon
+  try/except. The asymmetry is now resolved.
+- 13 new regression tests; 151 total passing, 95% coverage.

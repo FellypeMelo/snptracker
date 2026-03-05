@@ -252,9 +252,42 @@ def annotate_snp(
 
     Returns:
         str: One of "SYNONYMOUS", "NON_SYNONYMOUS", "NONSENSE", "NON_CODING".
+
+    Raises:
+        ValueError: If frame is not one of {1, 2, 3, -1, -2, -3}.
+
+    Note:
+        Returns "NON_CODING" (instead of raising) when a sequence contains
+        non-ACGT characters or an out-of-range position is encountered.
+        Invalid frame values always raise ValueError — they represent a
+        programming error, not a data quality issue.
     """
-    ref_codon = get_codon(ref_sequence, position, frame)
-    alt_codon = get_codon(alt_sequence, position, frame)
+    _VALID_FRAMES = {1, 2, 3, -1, -2, -3}
+    if frame not in _VALID_FRAMES:
+        raise ValueError(
+            f"Invalid frame '{frame}'. Must be one of {_VALID_FRAMES}."
+        )
+
+    try:
+        ref_codon = get_codon(ref_sequence, position, frame)
+        alt_codon = get_codon(alt_sequence, position, frame)
+    except ValueError:
+        return "NON_CODING"
+
+    if not ref_codon or not alt_codon:
+        return "NON_CODING"
+
+    try:
+        ref_aa = translate_codon(ref_codon)
+        alt_aa = translate_codon(alt_codon)
+    except (ValueError, KeyError):
+        return "NON_CODING"
+
+    if alt_aa == "STOP":
+        return "NONSENSE"
+    if ref_aa == alt_aa:
+        return "SYNONYMOUS"
+    return "NON_SYNONYMOUS"
 
     if not ref_codon or not alt_codon:
         return "NON_CODING"

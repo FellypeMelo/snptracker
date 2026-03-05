@@ -19,6 +19,24 @@ Formato do dict de SNP retornado por detect_snps():
         "context":   str   — contexto COSMIC ex: "T[A>G]C"  (ausente em INDELs)
     }
 
+Reading frames:
+    Annotation is performed under a configurable reading frame. Supported
+    values are +1/+2/+3 (forward strand) and -1/-2/-3 (reverse complement).
+    Default is +1, which preserves backwards-compatible behaviour.
+
+    Positions before the frame start (e.g., position 1 in frame +2) are
+    always annotated as NON_CODING.
+
+    For reverse frames, the sequence is reverse-complemented and the SNP
+    position is mirrored before codon lookup.
+
+File path handling (load_sequence):
+    --reference and --sample accept either a raw DNA string ("ACTG") or a
+    file path ("ref.fasta"). A FileNotFoundError is raised if the argument
+    looks like a file path (has an extension or directory separator) but the
+    file does not exist on disk. This prevents a typo from silently producing
+    incorrect annotation results.
+
 Uso via CLI:
     # Par único (strings ou arquivos FASTA)
     python main.py --reference "ACTG" --sample "ACTT"
@@ -27,6 +45,10 @@ Uso via CLI:
     # Com regiões codificantes explícitas (1-indexed, inclusive)
     python main.py --reference ref.fasta --sample sample.fasta --cds "1-90"
     python main.py --reference ref.fasta --sample sample.fasta --cds "1-90,100-150"
+
+    # Com reading frame explícito (padrão: 1)
+    python main.py --reference ref.fasta --sample sample.fasta --frame 2
+    python main.py --reference ref.fasta --sample sample.fasta --frame -1
 
     # Multi-amostra (primeira sequência do FASTA = referência)
     python main.py --input data/sequences.txt
@@ -289,17 +311,34 @@ def run_multi_sample(
 
 
 def load_sequence(input_data: str) -> str:
-    """
-    Loads sequence from a file if it exists, otherwise returns the string.
+    """Loads sequence from a file if it exists, otherwise returns the string.
+
+    Distinguishes between a raw DNA sequence (e.g. "ACTG") and a file path
+    (e.g. "ref.fasta" or "data/ref.fasta") by checking for a file extension
+    or a directory separator in the input string.
 
     Args:
-        input_data: File path or raw sequence string.
+        input_data: File path (with extension or path separator) or raw DNA
+            sequence string.
 
     Returns:
-        str: DNA sequence.
+        str: DNA sequence string.
+
+    Raises:
+        FileNotFoundError: If the input looks like a file path (contains a
+            known extension such as .fasta/.fa/.txt/.fastq or a directory
+            separator) but the file does not exist on disk. This prevents
+            a file path typo from being silently treated as a raw sequence,
+            which would produce incorrect annotation results.
     """
     if os.path.isfile(input_data):
         return read_fasta(input_data)
+    _, ext = os.path.splitext(input_data)
+    if ext or os.sep in input_data:
+        raise FileNotFoundError(
+            f"File not found: '{input_data}'. "
+            f"Provide a valid file path or a raw DNA sequence string."
+        )
     return input_data
 
 

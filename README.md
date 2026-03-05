@@ -31,9 +31,10 @@ Amostra:    A C T G G T A G A T A
 - **Classificação de Mutações**: Identifica transitions e transversions.
 - **Detecção de Indels**: Identifica inserções e deleções.
 - **Anotação Funcional**: Classifica cada SNP como SYNONYMOUS, NON_SYNONYMOUS, NONSENSE ou NON_CODING com base no código genético padrão.
+- **Múltiplos Reading Frames**: Suporte a frames +1, +2, +3 (fita direta) e -1, -2, -3 (complemento reverso) via `--frame`.
 - **Regiões Codificantes (CDS)**: O usuário pode definir quais regiões da sequência são codificantes. SNPs fora das regiões recebem `NON_CODING` automaticamente.
 - **Contexto de Trinucleotídeo**: Reporta as bases vizinhas de cada SNP no formato COSMIC (`BASE_ANTERIOR[REF>ALT]BASE_POSTERIOR`).
-- **Relatório Estruturado**: Saída formatada em tabela com colunas de anotação e contexto.
+- **Relatório Estruturado**: Saída formatada em tabela com colunas de anotação e contexto, incluindo o reading frame ativo.
 - **Exportação**: Salva resultados em arquivo texto customizável.
 
 ## Estrutura de Dados
@@ -108,6 +109,11 @@ python main.py --reference ref.fa --sample smp.fa --output meu_relatorio.txt
 # Definindo regiões codificantes (CDS) — SNPs fora recebem NON_CODING
 python main.py --reference ref.fa --sample smp.fa --cds "1-90"
 python main.py --reference ref.fa --sample smp.fa --cds "1-90,100-150"
+
+# Especificando o reading frame (padrão: 1)
+python main.py --reference ref.fa --sample smp.fa --frame 2
+python main.py --reference ref.fa --sample smp.fa --frame -1
+python main.py --reference ref.fa --sample smp.fa --frame -1 --cds "1-90"
 ```
 
 > ⚠️ `--reference` e `--input` são **mutuamente exclusivos** — use um ou outro, nunca os dois.
@@ -148,6 +154,7 @@ SNPTracker - Relatório de Mutações
 
 Referência: ACTGCTAGCTAGCTA
 Amostra:    ACTGCTGGCTAGATA
+Frame:      +1
 
 Total de variações encontradas: 3
 
@@ -245,7 +252,7 @@ snptracker/
 #### Milestone 3: Análises Avançadas 📊
 - [x] Contexto de trinucleotídeo (formato COSMIC: `X[R>A]Y`)
 - [x] Regiões codificantes vs não-codificantes (`--cds "start-end,..."`)
-- [ ] Múltiplos reading frames
+- [x] Múltiplos reading frames (`--frame 1/2/3/-1/-2/-3`)
 - [ ] Análise de qualidade (Phred scores / FASTQ)
 - [ ] Predição funcional (SIFT, PolyPhen)
 
@@ -282,7 +289,11 @@ INDELs detectados pela diferença de comprimento entre as sequências **não rec
 
 ### Efeitos Funcionais
 
-A anotação funcional é calculada automaticamente por `annotation.py` com base no código genético padrão (64 códons). Assume reading frame a partir da posição 1.
+A anotação funcional é calculada automaticamente por `annotation.py` com base
+no código genético padrão (64 códons). O reading frame padrão é +1, mas pode
+ser configurado via `--frame` (valores aceitos: 1, 2, 3, -1, -2, -3).
+Posições anteriores ao início do frame (ex.: posição 1 no frame +2) recebem
+`NON_CODING` automaticamente.
 
 | Anotação | Descrição |
 |----------|-----------|
@@ -322,15 +333,13 @@ GCT → TAA  →  Ala → STOP →  NONSENSE
 - Sem informação de qualidade de leitura (suporte FASTQ planejado)
 - Não identifica SNPs em repetições
 - Sem exportação VCF
-- Anotação assume reading frame +1 dentro de cada região CDS; frames +2 e +3 não são suportados (planejado no Milestone 3)
-- `--cds` disponível apenas no modo par único (`--reference`/`--sample`); suporte multi-amostra planejado
+- `--cds` e `--frame` disponíveis apenas no modo par único (`--reference`/`--sample`); suporte multi-amostra planejado
 
 ## Próximos Passos Recomendados
 
-1. **Múltiplos reading frames**: Suporte a frame +2 e +3
-2. **FASTQ / Phred**: Suporte a qualidade de leitura
-3. **VCF Export**: Formato padrão da indústria
-4. **SIFT / PolyPhen**: Predição funcional computacional
+1. **FASTQ / Phred**: Suporte a qualidade de leitura
+2. **VCF Export**: Formato padrão da indústria
+3. **SIFT / PolyPhen**: Predição funcional computacional
 
 ## Licença
 

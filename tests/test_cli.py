@@ -196,5 +196,58 @@ class TestReportWithFrame(unittest.TestCase):
         self.assertIn("-1", output)
 
 
+class TestLoadSequencePathValidation(unittest.TestCase):
+    """Tests for load_sequence() file-path detection and error reporting."""
+
+    def test_raw_acgt_string_returned_as_is(self):
+        """A plain ACGT sequence string is returned unchanged."""
+        self.assertEqual(load_sequence("ACTG"), "ACTG")
+
+    def test_existing_fasta_file_loads_sequence(self):
+        """An existing .fasta file is parsed and its sequence returned."""
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".fasta", delete=False
+        ) as f:
+            f.write(">seq\nACTG")
+            path = f.name
+        try:
+            self.assertEqual(load_sequence(path), "ACTG")
+        finally:
+            os.unlink(path)
+
+    def test_missing_fasta_extension_raises_file_not_found(self):
+        """A non-existent path with .fasta extension raises FileNotFoundError."""
+        with self.assertRaises(FileNotFoundError):
+            load_sequence("nonexistent_file.fasta")
+
+    def test_missing_fa_extension_raises_file_not_found(self):
+        """A non-existent path with .fa extension raises FileNotFoundError."""
+        with self.assertRaises(FileNotFoundError):
+            load_sequence("ref.fa")
+
+    def test_missing_txt_extension_raises_file_not_found(self):
+        """A non-existent path with .txt extension raises FileNotFoundError."""
+        with self.assertRaises(FileNotFoundError):
+            load_sequence("sequences.txt")
+
+    def test_path_with_directory_separator_raises_file_not_found(self):
+        """A path containing a directory separator raises FileNotFoundError."""
+        with self.assertRaises(FileNotFoundError):
+            load_sequence("data/ref.fasta")
+
+    def test_absolute_missing_path_raises_file_not_found(self):
+        """An absolute path that does not exist raises FileNotFoundError."""
+        with self.assertRaises(FileNotFoundError):
+            load_sequence("/tmp/does_not_exist_snptracker.fasta")
+
+    def test_error_message_contains_path(self):
+        """FileNotFoundError message includes the offending path."""
+        path = "missing_ref.fasta"
+        with self.assertRaises(FileNotFoundError) as ctx:
+            load_sequence(path)
+        self.assertIn(path, str(ctx.exception))
+
+
 if __name__ == "__main__":
     unittest.main()
