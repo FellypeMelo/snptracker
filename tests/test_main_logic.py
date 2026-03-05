@@ -10,6 +10,7 @@ from main import (
     run_multi_sample,
     get_trinucleotide_context,
     parse_cds_regions,
+    parse_args,
 )
 
 class TestMainLogic(unittest.TestCase):
@@ -365,6 +366,28 @@ class TestDetectSnpsFrame(unittest.TestCase):
         """detect_snps propagates ValueError for invalid frame."""
         with self.assertRaises(ValueError):
             detect_snps("GCTAAA", "GCCAAA", frame=0)
+
+
+class TestPredictFlag(unittest.TestCase):
+
+    def test_parse_args_predict_flag_true(self):
+        """--predict flag sets args.predict to True."""
+        args = parse_args(["--reference", "ACTG", "--sample", "ACTT", "--predict"])
+        self.assertTrue(args.predict)
+
+    def test_parse_args_predict_flag_default_false(self):
+        """--predict absent means args.predict defaults to False."""
+        args = parse_args(["--reference", "ACTG", "--sample", "ACTT"])
+        self.assertFalse(args.predict)
+
+    def test_detect_snps_without_predict_has_no_grantham_keys(self):
+        """detect_snps without predict never adds grantham keys (backwards-compat)."""
+        ref = "ATGGTTGCT"
+        smp = "ATGATTGCT"  # pos 4 G->A: Val->Ile (NON_SYNONYMOUS)
+        snps = detect_snps(ref, smp, frame=1)
+        self.assertEqual(len(snps), 1)
+        self.assertNotIn("grantham_score", snps[0])
+        self.assertNotIn("grantham_prediction", snps[0])
 
 
 if __name__ == "__main__":

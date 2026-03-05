@@ -61,3 +61,26 @@ Changes:
   strictly; forward frames swallowed the same error silently via translate_codon
   try/except. The asymmetry is now resolved.
 - 13 new regression tests; 151 total passing, 95% coverage.
+
+## functional_prediction_20260305 — Grantham Score Functional Prediction
+Folder: N/A (single-session feature, no dedicated track folder)
+Status: ✅ Complete
+
+Changes:
+- Created `prediction.py` with Grantham Score (1974) based on amino acid
+  physicochemical properties (composition, polarity, volume).
+- New public API: `translate_dna_to_protein`, `get_amino_acid_change`,
+  `grantham_score`, `grantham_prediction`, `predict_functional_impact`.
+- Added `--predict` flag to CLI (optional, default off).
+  When active: NON_SYNONYMOUS SNPs gain `grantham_score` (int) and
+  `grantham_prediction` (CONSERVATIVE | MODERATE | RADICAL) keys.
+- Works in both single-sample and multi-sample modes.
+- `detect_snps()` unchanged — backwards-compatible.
+- Predictions applied as post-processing via `_apply_predictions()`.
+- `print_snp_report()` and `generate_snp_file()` display Grantham column
+  when prediction keys are present.
+- 28 new tests; 179 total passing, 82% coverage.
+- Future intent: SIFT + PolyPhen-2 API integration documented in tech-stack.md.
+  Blockers: SIFT async (10–15 min), PolyPhen-2 offline, Ensembl VEP needs
+  chromosomal coordinates. Implementation path preserved in tech-stack.md.
+

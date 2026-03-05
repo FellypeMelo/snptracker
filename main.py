@@ -59,6 +59,7 @@ import argparse
 import os
 from fasta_parser import read_fasta
 from annotation import annotate_snp, annotate_snp_with_regions
+from prediction import predict_functional_impact
 
 
 def parse_cds_regions(cds_str: str) -> list[tuple[int, int]]:
@@ -249,20 +250,30 @@ def print_snp_report(
     print(f"\nTotal de variações encontradas: {len(snps)}")
 
     if snps:
-        print("\n" + "-" * 70)
-        print(
+        has_predict = any("grantham_score" in s for s in snps)
+        separator_width = 90 if has_predict else 70
+        print("\n" + "-" * separator_width)
+        header = (
             f"{'Posição':<10} {'Ref':<5} {'Alt':<5} {'Tipo':<15} "
             f"{'Anotação':<20} {'Contexto'}"
         )
-        print("-" * 70)
+        if has_predict:
+            header += f"{'':5} {'Grantham'}"
+        print(header)
+        print("-" * separator_width)
 
         for snp in snps:
-            print(
+            line = (
                 f"{snp['position']:<10} {snp['reference']:<5} "
                 f"{snp['alternate']:<5} {snp['type']:<15} "
                 f"{snp.get('annotation', ''):<20} "
                 f"{snp.get('context', 'N/A')}"
             )
+            if has_predict and "grantham_score" in snp:
+                score = snp["grantham_score"]
+                pred = snp["grantham_prediction"]
+                line += f"{'':5} {score} ({pred})"
+            print(line)
     else:
         print("\nNenhuma variação detectada (sequências idênticas)")
 
@@ -283,12 +294,17 @@ def generate_snp_file(snps: list[dict], output_file: str = "snps_report.txt") ->
         f.write("-" * 70 + "\n")
 
         for snp in snps:
-            f.write(
+            line = (
                 f"{snp['position']:<10} {snp['reference']:<5} "
                 f"{snp['alternate']:<5} {snp['type']:<15} "
                 f"{snp.get('annotation', ''):<20} "
                 f"{snp.get('context', 'N/A')}\n"
             )
+            if "grantham_score" in snp:
+                score = snp["grantham_score"]
+                pred = snp["grantham_prediction"]
+                line = line.rstrip("\n") + f"  {score} ({pred})\n"
+            f.write(line)
 
     print(f"\nRelatório salvo em: {output_file}")
 
@@ -394,6 +410,16 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
             "Default: 1. Only applicable with --reference."
         ),
     )
+    parser.add_argument(
+        "--predict",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable Grantham Score functional impact prediction for "
+            "NON_SYNONYMOUS SNPs. Adds 'grantham_score' and "
+            "'grantham_prediction' to each qualifying SNP."
+        ),
+    )
     namespace = parser.parse_args(args)
     if namespace.reference is not None and namespace.sample is None:
         parser.error("--sample é obrigatório quando --reference é utilizado.")
@@ -412,6 +438,23 @@ def main():
     print("\nAnálise concluída!")
 
 
+def _apply_predictions(
+    snps: list[dict],
+    reference: str,
+    frame: int = 1,
+) -> None:
+    """Applies Grantham Score prediction in-place to NON_SYNONYMOUS SNPs.
+
+    Args:
+        snps: List of SNP dicts (modified in-place).
+        reference: Reference DNA sequence.
+        frame: Reading frame used during detection.
+    """
+    for snp in snps:
+        prediction = predict_functional_impact(snp, reference, frame)
+        snp.update(prediction)
+
+
 def _run_single_sample_mode(args: argparse.Namespace) -> None:
     """Executes the original single reference vs single sample flow."""
     reference = load_sequence(args.reference)
@@ -423,6 +466,10 @@ def _run_single_sample_mode(args: argparse.Namespace) -> None:
 
     frame = args.frame
     snps = detect_snps(reference, sample, cds_regions=cds_regions, frame=frame)
+
+    if args.predict:
+        _apply_predictions(snps, reference, frame)
+
     print_snp_report(snps, reference, sample, frame=frame)
 
     if snps:
@@ -455,6 +502,8 @@ def _run_multi_sample_mode(args: argparse.Namespace) -> None:
 
     output_prefix = args.output.replace(".txt", "")
     for i, (name, snps) in enumerate(results.items(), start=1):
+        if args.predict:
+            _apply_predictions(snps, ref_seq)
         count = len(snps)
         if count > 0:
             output_file = f"{output_prefix}_{name.split()[0]}.txt"
