@@ -113,5 +113,88 @@ class TestMultiSampleCLI(unittest.TestCase):
         self.assertIsNone(args.cds)
 
 
+class TestParseArgsFrame(unittest.TestCase):
+
+    def test_frame_default_is_1(self):
+        """--frame is optional; defaults to 1."""
+        args = parse_args(["--reference", "ACTG", "--sample", "ACTT"])
+        self.assertEqual(args.frame, 1)
+
+    def test_frame_2_accepted(self):
+        """--frame 2 is accepted and stored as int."""
+        args = parse_args(
+            ["--reference", "ACTG", "--sample", "ACTT", "--frame", "2"]
+        )
+        self.assertEqual(args.frame, 2)
+
+    def test_frame_3_accepted(self):
+        args = parse_args(
+            ["--reference", "ACTG", "--sample", "ACTT", "--frame", "3"]
+        )
+        self.assertEqual(args.frame, 3)
+
+    def test_frame_minus1_accepted(self):
+        """--frame -1 is accepted."""
+        args = parse_args(
+            ["--reference", "ACTG", "--sample", "ACTT", "--frame", "-1"]
+        )
+        self.assertEqual(args.frame, -1)
+
+    def test_frame_minus3_accepted(self):
+        args = parse_args(
+            ["--reference", "ACTG", "--sample", "ACTT", "--frame", "-3"]
+        )
+        self.assertEqual(args.frame, -3)
+
+    def test_frame_invalid_value_raises(self):
+        """--frame 0 is not a valid frame and causes SystemExit."""
+        with self.assertRaises(SystemExit):
+            parse_args(
+                ["--reference", "ACTG", "--sample", "ACTT", "--frame", "0"]
+            )
+
+    def test_frame_invalid_string_raises(self):
+        """--frame abc causes SystemExit (not an int)."""
+        with self.assertRaises(SystemExit):
+            parse_args(
+                ["--reference", "ACTG", "--sample", "ACTT", "--frame", "abc"]
+            )
+
+
+class TestReportWithFrame(unittest.TestCase):
+
+    def test_report_header_shows_frame(self):
+        """print_snp_report includes the active frame in the header."""
+        from unittest.mock import patch
+        import io
+        from main import print_snp_report
+        snps = []
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
+            print_snp_report(snps, "ACTG", "ACTG", frame=2)
+            output = mock_out.getvalue()
+        self.assertIn("Frame", output)
+        self.assertIn("+2", output)
+
+    def test_report_header_frame1_shows_plus1(self):
+        """Default frame=1 is displayed as +1."""
+        from unittest.mock import patch
+        import io
+        from main import print_snp_report
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
+            print_snp_report([], "ACTG", "ACTG", frame=1)
+            output = mock_out.getvalue()
+        self.assertIn("+1", output)
+
+    def test_report_header_negative_frame(self):
+        """Negative frame is displayed with minus sign."""
+        from unittest.mock import patch
+        import io
+        from main import print_snp_report
+        with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
+            print_snp_report([], "ACTG", "ACTG", frame=-1)
+            output = mock_out.getvalue()
+        self.assertIn("-1", output)
+
+
 if __name__ == "__main__":
     unittest.main()

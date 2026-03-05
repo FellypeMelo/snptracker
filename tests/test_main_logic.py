@@ -307,5 +307,65 @@ class TestGetTrinucleotideContext(unittest.TestCase):
         )
 
 
+class TestDetectSnpsFrame(unittest.TestCase):
+    """Tests for detect_snps() with explicit reading frame."""
+
+    def test_frame1_default_backwards_compatible(self):
+        """detect_snps with no frame arg uses frame +1 — same as before."""
+        ref = "GCTAAA"
+        smp = "GCCAAA"  # pos3 T→C; frame+1 codon GCT→GCC (both Ala): SYNONYMOUS
+        snps = detect_snps(ref, smp)
+        self.assertEqual(len(snps), 1)
+        self.assertEqual(snps[0]["annotation"], "SYNONYMOUS")
+
+    def test_frame2_annotates_correctly(self):
+        """detect_snps with frame=2 annotates using frame +2 codon."""
+        # GCTAAACGT; frame+2: CTA|AAC|GT
+        # SNP at pos5: A→C → second codon AAC→CAC (Asn→His): NON_SYNONYMOUS
+        ref = "GCTAAACGT"
+        smp = "GCTACACGT"  # pos5 A→C only
+        snps = detect_snps(ref, smp, frame=2)
+        self.assertEqual(len(snps), 1)
+        self.assertEqual(snps[0]["position"], 5)
+        self.assertEqual(snps[0]["annotation"], "NON_SYNONYMOUS")
+
+    def test_frame2_position1_is_non_coding(self):
+        """SNP at pos 1 is NON_CODING in frame +2 (before frame start)."""
+        ref = "GCTAAACGT"
+        smp = "TCTAAACGT"  # pos1 G→T
+        snps = detect_snps(ref, smp, frame=2)
+        self.assertEqual(snps[0]["annotation"], "NON_CODING")
+
+    def test_frame3_positions_1_2_non_coding(self):
+        """SNPs at positions 1 and 2 are NON_CODING in frame +3."""
+        ref = "GCTAAACGT"
+        smp = "TATCAACGT"  # pos1 G→T, pos2 C→A
+        snps = detect_snps(ref, smp, frame=3)
+        positions_annotated = {s["position"]: s["annotation"] for s in snps}
+        self.assertEqual(positions_annotated[1], "NON_CODING")
+        self.assertEqual(positions_annotated[2], "NON_CODING")
+
+    def test_frame_minus1_annotation(self):
+        """detect_snps with frame=-1 annotates via reverse complement."""
+        ref = "GCTAAACGT"
+        smp = "GCTAAACGA"  # pos9 T→A
+        snps = detect_snps(ref, smp, frame=-1)
+        self.assertEqual(len(snps), 1)
+        self.assertEqual(snps[0]["annotation"], "NON_SYNONYMOUS")
+
+    def test_frame_with_cds_regions(self):
+        """frame param is combined correctly with cds_regions."""
+        ref = "GCTAAACGT"
+        smp = "GCTACACGT"  # pos5 A→C only
+        # CDS covers the whole sequence, frame=2
+        snps = detect_snps(ref, smp, cds_regions=[(1, 9)], frame=2)
+        self.assertEqual(snps[0]["annotation"], "NON_SYNONYMOUS")
+
+    def test_frame_invalid_raises(self):
+        """detect_snps propagates ValueError for invalid frame."""
+        with self.assertRaises(ValueError):
+            detect_snps("GCTAAA", "GCCAAA", frame=0)
+
+
 if __name__ == "__main__":
     unittest.main()

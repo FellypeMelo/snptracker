@@ -99,6 +99,7 @@ def detect_snps(
     reference: str,
     sample: str,
     cds_regions: list[tuple[int, int]] | None = None,
+    frame: int = 1,
 ) -> list[dict]:
     """
     Compara duas sequências e identifica SNPs e indels.
@@ -117,6 +118,7 @@ def detect_snps(
             (start, end) 1-indexed inclusive. Se None, toda a sequência
             é tratada como codificante (comportamento padrão). Se lista
             vazia, todos os SNPs recebem annotation='NON_CODING'.
+        frame: Reading frame. One of {1, 2, 3, -1, -2, -3}. Default 1.
 
     Returns:
         list[dict]: Lista de SNPs. Ver formato no topo deste módulo.
@@ -142,7 +144,7 @@ def detect_snps(
                 "alternate": smp_base,
                 "type": classify_mutation(ref_base, smp_base),
                 "annotation": annotate_snp_with_regions(
-                    i + 1, ref, smp, cds_regions
+                    i + 1, ref, smp, cds_regions, frame
                 ),
                 "context": get_trinucleotide_context(
                     ref, i + 1, ref_base, smp_base
@@ -200,7 +202,12 @@ def classify_mutation(ref_base: str, alt_base: str) -> str:
         return "TRANSVERSION"
 
 
-def print_snp_report(snps: list[dict], reference: str, sample: str) -> None:
+def print_snp_report(
+    snps: list[dict],
+    reference: str,
+    sample: str,
+    frame: int = 1,
+) -> None:
     """
     Imprime relatório de SNPs formatado.
 
@@ -208,12 +215,15 @@ def print_snp_report(snps: list[dict], reference: str, sample: str) -> None:
         snps: Lista de SNPs detectados
         reference: Sequência de referência
         sample: Sequência da amostra
+        frame: Reading frame used during annotation (default 1).
     """
+    frame_label = f"+{frame}" if frame > 0 else str(frame)
     print("=" * 60)
     print("SNPTracker - Relatório de Mutações")
     print("=" * 60)
     print(f"\nReferência: {reference}")
     print(f"Amostra:    {sample}")
+    print(f"Frame:      {frame_label}")
     print(f"\nTotal de variações encontradas: {len(snps)}")
 
     if snps:
@@ -334,6 +344,17 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
             "codificante."
         ),
     )
+    parser.add_argument(
+        "--frame",
+        type=int,
+        default=1,
+        choices=[1, 2, 3, -1, -2, -3],
+        help=(
+            "Reading frame for functional annotation: "
+            "1, 2, 3 (forward) or -1, -2, -3 (reverse complement). "
+            "Default: 1. Only applicable with --reference."
+        ),
+    )
     namespace = parser.parse_args(args)
     if namespace.reference is not None and namespace.sample is None:
         parser.error("--sample é obrigatório quando --reference é utilizado.")
@@ -361,8 +382,9 @@ def _run_single_sample_mode(args: argparse.Namespace) -> None:
     if args.cds:
         cds_regions = parse_cds_regions(args.cds)
 
-    snps = detect_snps(reference, sample, cds_regions=cds_regions)
-    print_snp_report(snps, reference, sample)
+    frame = args.frame
+    snps = detect_snps(reference, sample, cds_regions=cds_regions, frame=frame)
+    print_snp_report(snps, reference, sample, frame=frame)
 
     if snps:
         generate_snp_file(snps, output_file=args.output)
