@@ -14,3 +14,6 @@ snps_report*.txt
 # Cobertura
 .coverage
 htmlcov/
+
+# Contexto pessoal — não versionar
+contexto_medico.md
